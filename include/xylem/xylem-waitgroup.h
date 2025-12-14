@@ -22,3 +22,11 @@
 _Pragma("once")
 
 #include "xylem.h"
+
+typedef struct xylem_waitgroup_s xylem_waitgroup_t;
+
+extern xylem_waitgroup_t* xylem_waitgroup_create(void);
+extern void xylem_waitgroup_add(xylem_waitgroup_t* waitgroup, size_t delta);
+extern void xylem_waitgroup_done(xylem_waitgroup_t* waitgroup);
+extern void xylem_waitgroup_wait(xylem_waitgroup_t* waitgroup);
+extern void xylem_waitgroup_destroy(xylem_waitgroup_t* waitgroup);

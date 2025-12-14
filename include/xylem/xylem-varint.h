@@ -21,32 +21,8 @@
 
 _Pragma("once")
 
-#include <assert.h>
-#include <complex.h>
-#include <ctype.h>
-#include <errno.h>
-#include <fenv.h>
-#include <float.h>
-#include <inttypes.h>
-#include <limits.h>
-#include <locale.h>
-#include <math.h>
-#include <setjmp.h>
-#include <signal.h>
-#include <stdalign.h>
-#include <stdarg.h>
-#include <stdatomic.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
+#include "xylem.h"
 
-#include "deprecated/c11-threads.h"
-
-#include "xylem/xylem-heap.h"
-#include "xylem/xylem-rbtree.h"
-#include "xylem/xylem-varint.h"
-#include "xylem/xylem-waitgroup.h"
+extern size_t xylem_varint_compute(uint64_t value);
+extern bool xylem_varint_encode(uint64_t value, uint8_t* buf, size_t bufsize, size_t* pos);
+extern bool xylem_varint_decode(const uint8_t* buf, size_t bufsize, size_t* pos, uint64_t* out_value);

@@ -314,6 +314,9 @@ color:
 }
 
 bool xylem_rbtree_empty(xylem_rbtree_t* tree) {
+    if (!tree) {
+        return true;
+    }
     return (tree->root == NULL);
 }
 

@@ -2,10 +2,12 @@ cmake_minimum_required(VERSION 3.16)
 
 project(Xylem LANGUAGES C)
 
-option(XYLEM_ENABLE_TESTING "enable testing" ON)
+option(XYLEM_ENABLE_TESTING "enable unit testing" ON)
+option(XYLEM_ENABLE_ASAN "enable memory error detection" ON)
+option(XYLEM_ENABLE_TSAN  "enable data race detection" OFF)
+option(XYLEM_ENABLE_UBSAN "enable undefined behavior detection" OFF)
 option(XYLEM_ENABLE_DYNAMIC_LIBRARY "build dynamic library" OFF)
 option(XYLEM_ENABLE_COVERAGE "enable code coverage reporting" ON)
-option(XYLEM_ENABLE_ASAN "enable AddressSanitizer for memory error detection" ON)
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
@@ -33,11 +35,11 @@ set(SRCS
 #	src/xylem-stack.c
 #	src/xylem-bswap.c
 	src/xylem-rbtree.c
-#	src/xylem-varint.c
+	src/xylem-varint.c
 #	src/xylem-sha256.c
 #	src/xylem-base64.c
 #	src/xylem-thrdpool.c
-#	src/xylem-waitgroup.c
+	src/xylem-waitgroup.c
 #	src/xylem-ringbuffer.c
 )
 
@@ -60,7 +62,7 @@ endif()
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
 	set(CMAKE_SYSTEM_PROCESSOR "aarch64")
 endif()
-message(STATUS "OpenCppCoverage found at: ${CMAKE_SYSTEM_PROCESSOR}")
+
 add_library(ssl IMPORTED STATIC)
 add_library(crypto IMPORTED STATIC)
 
@@ -94,19 +96,33 @@ endif()
 target_link_libraries(xylem PRIVATE ssl crypto ${CMAKE_DL_LIBS})
 
 if(XYLEM_ENABLE_ASAN)
-	if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+	if(WIN32 AND CMAKE_C_COMPILER_ID MATCHES "MSVC")
 		target_compile_options(xylem PRIVATE /fsanitize=address)
         target_link_options(xylem PRIVATE /fsanitize=address)
 	endif()
 
-    if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    if(UNIX AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(xylem PRIVATE -fsanitize=address -fno-omit-frame-pointer)
-		target_link_options(xylem PRIVATE -fsanitize=address asan.lib)
+		target_link_options(xylem PRIVATE -fsanitize=address)
+    endif()
+endif()
+
+if(XYLEM_ENABLE_TSAN)
+    if(UNIX AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(xylem PRIVATE -fsanitize=thread -fno-omit-frame-pointer)
+		target_link_options(xylem PRIVATE -fsanitize=thread)
+    endif()
+endif()
+
+if(XYLEM_ENABLE_UBSAN)
+    if(UNIX AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(xylem PRIVATE -fsanitize=undefined -fno-omit-frame-pointer)
+		target_link_options(xylem PRIVATE -fsanitize=undefined)
     endif()
 endif()
 
 if(XYLEM_ENABLE_COVERAGE)
-    if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    if(UNIX AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(xylem PRIVATE --coverage)
 		target_link_options(xylem PRIVATE --coverage)
     endif()
@@ -124,21 +140,17 @@ if(XYLEM_ENABLE_TESTING)
 endif()
 
 if(XYLEM_ENABLE_COVERAGE)
-	if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
-		find_program(LCOV_BIN lcov)
-		find_program(GENHTML_BIN genhtml)
+	find_program(LCOV_BIN lcov)
+	find_program(GENHTML_BIN genhtml)
 
-		if(LCOV_BIN AND GENHTML_BIN)
-			add_custom_target(coverage
-				COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/coverage
-				COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/coverage
-				COMMAND ${LCOV_BIN} --capture --directory . --output-file ${CMAKE_BINARY_DIR}/coverage/coverage.info
-				COMMAND ${GENHTML_BIN} ${CMAKE_BINARY_DIR}/coverage/coverage.info --output-directory ${CMAKE_BINARY_DIR}/coverage/html
-				WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-				COMMENT "generating html coverage report in coverage/html/index.html"
-			)
-		else()
-			message(WARNING "lcov or genhtml not found. install lcov package to generate coverage reports.")
-		endif()
+	if(UNIX AND LCOV_BIN AND GENHTML_BIN)
+		add_custom_target(coverage
+			COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/coverage
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/coverage
+			COMMAND ${LCOV_BIN} --capture --directory . --output-file ${CMAKE_BINARY_DIR}/coverage/coverage.info
+			COMMAND ${GENHTML_BIN} ${CMAKE_BINARY_DIR}/coverage/coverage.info --output-directory ${CMAKE_BINARY_DIR}/coverage/html
+			WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+			COMMENT "generating html coverage report in coverage/html/index.html"
+		)
 	endif()
 endif()

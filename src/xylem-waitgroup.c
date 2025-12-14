@@ -39,7 +39,7 @@ xylem_waitgroup_t* xylem_waitgroup_create(void) {
     return waitgroup;
 }
 
-void xylem_waitgroup_destroy(xylem_waitgroup_t* restrict waitgroup) {
+void xylem_waitgroup_destroy(xylem_waitgroup_t* waitgroup) {
     if (!waitgroup) {
         return;
     }
@@ -50,7 +50,7 @@ void xylem_waitgroup_destroy(xylem_waitgroup_t* restrict waitgroup) {
     free(waitgroup);
 }
 
-void xylem_waitgroup_add(xylem_waitgroup_t* restrict waitgroup, size_t delta) {
+void xylem_waitgroup_add(xylem_waitgroup_t* waitgroup, size_t delta) {
     if (!waitgroup) {
         return;
     }
@@ -59,11 +59,15 @@ void xylem_waitgroup_add(xylem_waitgroup_t* restrict waitgroup, size_t delta) {
     mtx_unlock(&waitgroup->mtx);
 }
 
-void xylem_waitgroup_done(xylem_waitgroup_t* restrict waitgroup) {
+void xylem_waitgroup_done(xylem_waitgroup_t* waitgroup) {
     if (!waitgroup) {
         return;
     }
     mtx_lock(&waitgroup->mtx);
+    if (waitgroup->cnt == 0) {
+        mtx_unlock(&waitgroup->mtx);
+        return;
+    }
     waitgroup->cnt--;
     if (waitgroup->cnt == 0) {
         cnd_broadcast(&waitgroup->cnd);
@@ -71,7 +75,7 @@ void xylem_waitgroup_done(xylem_waitgroup_t* restrict waitgroup) {
     mtx_unlock(&waitgroup->mtx);
 }
 
-void xylem_waitgroup_wait(xylem_waitgroup_t* restrict waitgroup) {
+void xylem_waitgroup_wait(xylem_waitgroup_t* waitgroup) {
     if (!waitgroup) {
         return;
     }

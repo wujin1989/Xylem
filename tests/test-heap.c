@@ -1,6 +1,4 @@
 #include "xylem.h"
-#include <assert.h>
-#include <stdlib.h>
 
 typedef struct {
     int               key;
