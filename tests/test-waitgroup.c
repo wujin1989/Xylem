@@ -26,17 +26,15 @@ static int early_done_thread(void* arg) {
     return 0;
 }
 
-static int stress_thread(void* arg) {
+static int worker_thread_completion(void* arg) {
     xylem_waitgroup_t* wg = (xylem_waitgroup_t*)arg;
 
-    int operations = rand() % 100;
-    for (int i = 0; i < operations; i++) {
-        if (rand() % 2 == 0) {
-            xylem_waitgroup_add(wg, 1);
-        } else {
-            xylem_waitgroup_done(wg);
-        }
+    int          iterations = 10 + (rand() % 50);
+    volatile int dummy = 0;
+    for (int i = 0; i < iterations; i++) {
+        dummy += i;
     }
+    xylem_waitgroup_done(wg);
     return 0;
 }
 
@@ -129,16 +127,14 @@ static void test_concurrent_stress(void) {
     xylem_waitgroup_add(wg, STRESS_THREADS);
 
     for (int i = 0; i < STRESS_THREADS; i++) {
-        int result = thrd_create(&threads[i], stress_thread, wg);
+        int result = thrd_create(&threads[i], worker_thread_completion, wg);
         assert(result == thrd_success);
     }
+    xylem_waitgroup_wait(wg);
 
     for (int i = 0; i < STRESS_THREADS; i++) {
         thrd_join(threads[i], NULL);
-        xylem_waitgroup_done(wg);
     }
-
-    xylem_waitgroup_wait(wg);
     xylem_waitgroup_destroy(wg);
 }
 
