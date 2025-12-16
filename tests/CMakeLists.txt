@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(tests LANGUAGES C)
 
-include(xylem-sanitizers)
-include(xylem-tests)
+include(xylem-utils)
 
 xylem_add_test(heap)
 xylem_add_test(rbtree)
@@ -26,8 +25,10 @@ if(XYLEM_ENABLE_COVERAGE AND WIN32)
                 "--"
                 ctest.exe --test-dir "${CMAKE_BINARY_DIR}" -C $<CONFIG> --output-on-failure
             WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-            COMMENT "Generating HTML coverage report in coverage/index.html"
+            COMMENT "generating HTML coverage report in coverage/index.html"
             USES_TERMINAL
         )
+    else()
+        message(WARNING "OpenCppCoverage not found. install it and add to PATH.")
     endif()
 endif()

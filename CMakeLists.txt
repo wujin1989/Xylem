@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 project(Xylem LANGUAGES C)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(xylem-sanitizers)
+include(xylem-utils)
 
 option(XYLEM_ENABLE_TESTING "enable unit testing" ON)
 option(XYLEM_ENABLE_ASAN "enable memory error detection" ON)
@@ -66,7 +66,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
     set(TARGET_ARCH "aarch64")
 else()
-    message(FATAL_ERROR "Unsupported architecture: ${CMAKE_SYSTEM_PROCESSOR}")
+    message(FATAL_ERROR "unsupported architecture: ${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
 set(OPENSSL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third-party/openssl3")
@@ -132,10 +132,11 @@ if(XYLEM_ENABLE_COVERAGE AND UNIX)
         add_custom_target(coverage
             COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/coverage
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/coverage
+            COMMAND ctest --test-dir ${CMAKE_BINARY_DIR} -C $<CONFIG> --output-on-failure
             COMMAND ${LCOV_BIN} --capture --directory . --output-file ${CMAKE_BINARY_DIR}/coverage/coverage.info
             COMMAND ${GENHTML_BIN} ${CMAKE_BINARY_DIR}/coverage/coverage.info --output-directory ${CMAKE_BINARY_DIR}/coverage/html
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMENT "Generating HTML coverage report in coverage/html/index.html"
+            COMMENT "generating html coverage report in coverage/html/index.html"
         )
     else()
         message(WARNING "lcov or genhtml not found; 'coverage' target not created.")

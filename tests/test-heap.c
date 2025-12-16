@@ -387,6 +387,5 @@ int main() {
     test_heap_upward_adjustment();
     test_heap_complex_removal();
     test_heap_remove_last_root_node();
-
     return 0;
 }
