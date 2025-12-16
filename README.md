@@ -8,17 +8,9 @@ Xylem is a pure C library, supplementing rather than replacing the C11 standard.
 - The compiler needs to support C11.
 
 
-# Compile
+# Build
     cmake -B out
-    cmake --build out --config Debug -j 8
-
-# Test
-    ctest --test-dir out -C Debug --output-on-failure
-
-# Coverage
-    cmake --build out --target coverage
-
-# Install
+    cmake --build out
     cmake --install out
 
 

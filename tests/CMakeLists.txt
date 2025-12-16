@@ -2,45 +2,32 @@ cmake_minimum_required(VERSION 3.16)
 
 project(tests LANGUAGES C)
 
-function(add_xylem_test test_name)
-    add_executable(test-${test_name} "test-${test_name}.c")
-    target_link_libraries(test-${test_name} PUBLIC xylem)
-    add_test(NAME ${test_name} COMMAND test-${test_name})
+include(xylem-sanitizers)
+include(xylem-tests)
 
-    if(XYLEM_ENABLE_ASAN)
-        if(WIN32 AND CMAKE_C_COMPILER_ID MATCHES "MSVC")
-            target_compile_options(test-${test_name} PRIVATE /fsanitize=address)
-            target_link_options(test-${test_name} PRIVATE /fsanitize=address)
-        endif()
-        
-        if(UNIX AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-            target_compile_options(test-${test_name} PRIVATE -fsanitize=address -fno-omit-frame-pointer)
-            target_link_options(test-${test_name} PRIVATE -fsanitize=address)
-        endif()
+xylem_add_test(heap)
+xylem_add_test(rbtree)
+xylem_add_test(varint)
+xylem_add_test(waitgroup)
+
+if(XYLEM_ENABLE_COVERAGE AND WIN32)
+    find_program(OPENCPPCOVERAGE_BIN OpenCppCoverage)
+    if(OPENCPPCOVERAGE_BIN)
+        file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/src" SRC_DIR_NATIVE)
+        file(TO_NATIVE_PATH "${CMAKE_SOURCE_DIR}/tests" TESTS_DIR_NATIVE)
+        file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}/coverage" COVERAGE_OUTPUT_DIR_NATIVE)
+
+        add_custom_target(coverage
+            COMMAND ${OPENCPPCOVERAGE_BIN}
+                "--sources=${SRC_DIR_NATIVE}"
+                "--excluded_sources=${TESTS_DIR_NATIVE}"
+                "--export_type=html:${COVERAGE_OUTPUT_DIR_NATIVE}"
+                "--cover_children"
+                "--"
+                ctest.exe --test-dir "${CMAKE_BINARY_DIR}" -C $<CONFIG> --output-on-failure
+            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+            COMMENT "Generating HTML coverage report in coverage/index.html"
+            USES_TERMINAL
+        )
     endif()
-
-    if(XYLEM_ENABLE_TSAN)
-        if(UNIX AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-            target_compile_options(test-${test_name} PRIVATE -fsanitize=thread -fno-omit-frame-pointer)
-            target_link_options(test-${test_name} PRIVATE -fsanitize=thread)
-        endif()
-    endif()
-
-    if(XYLEM_ENABLE_UBSAN)
-        if(UNIX AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-            target_compile_options(test-${test_name} PRIVATE -fsanitize=undefined -fno-omit-frame-pointer)
-            target_link_options(test-${test_name} PRIVATE -fsanitize=undefined)
-        endif()
-    endif()
-
-    if(XYLEM_ENABLE_COVERAGE)
-        if(UNIX AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-            target_link_options(test-${test_name} PRIVATE --coverage)
-        endif()
-    endif()
-endfunction()
-
-add_xylem_test(heap)
-add_xylem_test(rbtree)
-add_xylem_test(varint)
-add_xylem_test(waitgroup)
+endif()
