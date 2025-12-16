@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- CMake ¡Ý 3.16
+- CMake >= 3.16
 - C11 compatible compiler (MSVC, GCC, or Clang)
 - (Optional) For code coverage:
   - **Windows**: [OpenCppCoverage](https://github.com/OpenCppCoverage/OpenCppCoverage) in your `PATH`
