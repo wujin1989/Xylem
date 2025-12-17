@@ -1,6 +1,4 @@
-﻿---
-
-#### Q: When using AddressSanitizer (ASan) in Visual Studio 2022, the application runs fine within the IDE, but when executing from the command line, it reports an error about not being able to find `clang_rt.asan_dynamic-x86_64.dll`.
+﻿#### Q: When using AddressSanitizer (ASan) in Visual Studio 2022, the application runs fine within the IDE, but when executing from the command line, it reports an error about not being able to find `clang_rt.asan_dynamic-x86_64.dll`.
 
 > **A:** ✅ Use the **Developer Command Prompt**, such as the **x64 Native Tools Command Prompt for VS 2022**.  
 > This environment automatically sets up the necessary runtime paths for sanitizer DLLs.

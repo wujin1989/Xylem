@@ -1,25 +1,36 @@
-# Overview
-Xylem is a pure C library, supplementing rather than replacing the C11 standard.
+﻿# 🌱 Overview  
+Xylem is a pure C library, **supplementing** — not replacing — the C11 standard.
 
-# Feature
-- Cross-platform Compatibility
+---
 
-# Requirement
-- The compiler needs to support C11.
+# ✨ Features  
+- 🌐 **Cross-platform compatibility** (Windows, Linux, macOS)
 
-# Compile
-    cmake -B out
-    cmake --build out
+---
 
-# Documentation
-Reference docs.
+# ⚙️ Requirements  
+- A C compiler with **C11 support**
 
-# License
-MIT License
+---
 
-====
+# 🛠️ Build Instructions  
+```bash
+cmake -B out
+cmake --build out
+```
 
-Copyright (c) 2026-2036, Jin.Wu <wujin.developer@gmail.com>
+---
+
+# 📚 Documentation  
+Reference docs
+
+---
+
+# 📄 License  
+**MIT License**
+
+```
+Copyright (c) 2026–2036, Jin.Wu <wujin.developer@gmail.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to
@@ -38,5 +49,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 IN THE SOFTWARE.
+```
 
-====
+---  
+
+✅ Lightweight • 🔒 Standards-compliant • 🧩 Easy to integrate
+
+---
