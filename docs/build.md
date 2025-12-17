@@ -17,7 +17,7 @@
 > #### Visual Studio (Windows)
 > cmake -B out -G "Visual Studio 17 2022"
 > #### Ninja (cross-platform, faster)
-> cmake -B out -G Ninja
+> cmake -B out -G "Ninja Multi-Config"
 
 ## Build
 > cmake --build out --config Debug -j 8
@@ -29,5 +29,5 @@
 > cmake --build out --target coverage
 
 ## Install
-> cmake --install out
+> cmake --install out --config Debug
 
