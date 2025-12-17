@@ -60,7 +60,6 @@
 > 💡 **Platform notes**:  
 > - **Windows**: Requires [OpenCppCoverage](https://github.com/OpenCppCoverage/OpenCppCoverage) in your `PATH`.  
 > - **Linux**: Requires `lcov` and `genhtml` (e.g., `sudo apt install lcov`).  
-
 > 📌 Note: On single-config generators (e.g., Ninja or Makefiles on Linux), omit `--config Debug` in step 2, as the build type is set during configuration via `-DCMAKE_BUILD_TYPE=Debug`.
 
 --- 
