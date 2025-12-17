@@ -9,7 +9,7 @@
 > Note: TSan is only supported on Unix; it is not available on Windows.
 
 #### Q: Can AddressSanitizer (ASan), ThreadSanitizer (TSan), and UndefinedBehaviorSanitizer (UBSan) be enabled simultaneously?
-> **A:** No¡ªthey are not designed to run together. It¡¯s best to enable only one sanitizer at a time to avoid conflicts, performance issues, and ambiguous diagnostics.
+> **A:** No, they are not designed to run together. It is best to enable only one sanitizer at a time to avoid conflicts, performance issues, and ambiguous diagnostics.
 
 #### Q: How do I enable a specific sanitizer (ASan/TSan/UBSan) in my CMake project?
 > **A:** Configure your build with the corresponding CMake option. For example:
@@ -22,7 +22,7 @@
 
 #### Q: How do I generate a code coverage report for my tests?
 
-> **A:** Enable coverage during configuration and run the `coverage` target ¡ª it automatically runs all tests, and generates the report:
+> **A:** Enable coverage during configuration and run the `coverage` target, it automatically runs all tests, and generates the report:
 > ```bash
 > # Configure with coverage enabled
 >   cmake -B out -DXYLEM_ENABLE_COVERAGE=ON
