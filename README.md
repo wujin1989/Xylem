@@ -1,4 +1,4 @@
-![image](https://github.com/wujin1989/Xylem/tree/main/docs/images/Xylem-logo.png)
+![logo](https://github.com/wujin1989/Xylem/blob/main/docs/images/Xylem-logo.png)
 
 # Overview
 Xylem is a pure C library, **supplementing** — not replacing — the C11 standard.
