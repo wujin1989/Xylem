@@ -1,4 +1,5 @@
 ![logo](https://github.com/wujin1989/Xylem/blob/main/docs/images/Xylem-logo.png)
+[![CodeFactor](https://www.codefactor.io/repository/github/wujin1989/xylem/badge)](https://www.codefactor.io/repository/github/wujin1989/xylem)
 
 # Overview
 Xylem is a pure C library, **supplementing** — not replacing — the C11 standard.

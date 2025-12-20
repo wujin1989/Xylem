@@ -23,5 +23,7 @@ _Pragma("once")
 
 #include "xylem.h"
 
-extern int xylem_base64_encode(const uint8_t* src, int srclen, uint8_t* dst, int dstlen);
-extern int xylem_base64_decode(const uint8_t* src, int srclen, uint8_t* dst, int dstlen);
+extern int xylem_base64_encode_std(const uint8_t* src, int slen, uint8_t* dst, int dlen);
+extern int xylem_base64_decode_std(const uint8_t* src, int slen, uint8_t* dst, int dlen);
+extern int xylem_base64_encode_url(const uint8_t* src, int slen, uint8_t* dst, int dlen, bool padding);
+extern int xylem_base64_decode_url(const uint8_t* src, int slen, uint8_t* dst, int dlen, bool padding);

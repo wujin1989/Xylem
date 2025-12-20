@@ -43,7 +43,7 @@ set(SRCS
 	src/xylem-rbtree.c
 	src/xylem-varint.c
 #	src/xylem-sha256.c
-#	src/xylem-base64.c
+	src/xylem-base64.c
 #	src/xylem-ringbuf.c
 #	src/xylem-thrdpool.c
 	src/xylem-waitgroup.c
