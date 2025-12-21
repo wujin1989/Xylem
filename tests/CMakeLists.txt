@@ -5,6 +5,7 @@ project(tests LANGUAGES C)
 include(xylem-utils)
 
 xylem_add_test(heap)
+xylem_add_test(bswap)
 xylem_add_test(base64)
 xylem_add_test(rbtree)
 xylem_add_test(varint)

@@ -39,7 +39,7 @@ set(SRCS
 #	src/xylem-queue.c
 #	src/xylem-utils.c
 #	src/xylem-stack.c
-#	src/xylem-bswap.c
+	src/xylem-bswap.c
 	src/xylem-rbtree.c
 	src/xylem-varint.c
 #	src/xylem-sha256.c

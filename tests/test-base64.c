@@ -21,7 +21,6 @@
 
 #include "xylem.h"
 
-
 /**
  * Test encoding and decoding of empty input (zero-length).
  * Both standard and URL-safe variants should handle it gracefully.
