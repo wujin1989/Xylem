@@ -12,6 +12,7 @@ option(XYLEM_ENABLE_UBSAN "enable undefined behavior detection" ON)
 option(XYLEM_ENABLE_DYNAMIC_LIBRARY "build dynamic library" OFF)
 option(XYLEM_ENABLE_COVERAGE "enable code coverage reporting" ON)
 
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
