@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 project(tests LANGUAGES C)
 
 include(xylem-utils)
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 xylem_add_test(heap)
 xylem_add_test(bswap)
 xylem_add_test(base64)
