@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os_runner }}
 
     strategy:
       # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
@@ -23,32 +23,57 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-intel]
         build_type: [Release]
         c_compiler: [gcc, clang, cl]
         include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-          - os: ubuntu-latest
+          # Linux
+          - os: ubuntu
+            os_runner: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
+          - os: ubuntu
+            os_runner: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+
+          # Windows
+          - os: windows
+            os_runner: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+
+          # macOS Intel (x86_64)
+          - os: macos-intel
+            os_runner: macos-13        # or macos-12 — Intel only
+            c_compiler: clang
+            cpp_compiler: clang++
+
+          # macOS ARM64 (Apple Silicon)
           - os: macos-latest
+            os_runner: macos-14        # ARM64 by default
             c_compiler: clang
             cpp_compiler: clang++
         exclude:
-          - os: windows-latest
+          # 排除 Windows 上非 cl 编译器（虽然 include 没加，但保险起见）
+          - os: windows
             c_compiler: gcc
-          - os: windows-latest
+          - os: windows
             c_compiler: clang
-          - os: ubuntu-latest
+
+          # 排除 Ubuntu 上使用 cl（MSVC）—— 不可能
+          - os: ubuntu
             c_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: clang
+
+          # 排除 macOS（Intel/ARM）上使用非 clang 编译器
+          - os: macos-intel
+            c_compiler: gcc
+          - os: macos-intel
+            c_compiler: cl
+          - os: macos-latest
+            c_compiler: gcc
           - os: macos-latest
             c_compiler: cl
-          - os: macos-latest
-            c_compiler: gcc
 
     steps:
     - uses: actions/checkout@v4
