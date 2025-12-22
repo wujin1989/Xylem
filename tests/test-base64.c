@@ -20,6 +20,7 @@
  */
 
 #include "xylem.h"
+#include "ASSERT.h"
 
 /**
  * Test encoding and decoding of empty input (zero-length).
@@ -30,21 +31,21 @@ static void test_empty_input(void) {
 
     // Standard encode/decode
     int elen = xylem_base64_encode_std(NULL, 0, enc, sizeof(enc));
-    assert(elen == 0);
+    ASSERT(elen == 0);
 
     int dlen = xylem_base64_decode_std(NULL, 0, dec, sizeof(dec));
-    assert(dlen == 0);
+    ASSERT(dlen == 0);
 
     // URL-safe (with and without padding)
     elen = xylem_base64_encode_url(NULL, 0, enc, sizeof(enc), true);
-    assert(elen == 0);
+    ASSERT(elen == 0);
     elen = xylem_base64_encode_url(NULL, 0, enc, sizeof(enc), false);
-    assert(elen == 0);
+    ASSERT(elen == 0);
 
     dlen = xylem_base64_decode_url(NULL, 0, dec, sizeof(dec), true);
-    assert(dlen == 0);
+    ASSERT(dlen == 0);
     dlen = xylem_base64_decode_url(NULL, 0, dec, sizeof(dec), false);
-    assert(dlen == 0);
+    ASSERT(dlen == 0);
 }
 
 /**
@@ -57,26 +58,26 @@ static void test_one_byte(void) {
 
     // Standard: must produce "QQ=="
     int elen = xylem_base64_encode_std(input, 1, enc, sizeof(enc));
-    assert(elen == 4);
-    assert(memcmp(enc, "QQ==", 4) == 0);
+    ASSERT(elen == 4);
+    ASSERT(memcmp(enc, "QQ==", 4) == 0);
 
     int dlen = xylem_base64_decode_std(enc, 4, dec, sizeof(dec));
-    assert(dlen == 1);
-    assert(dec[0] == 0x41);
+    ASSERT(dlen == 1);
+    ASSERT(dec[0] == 0x41);
 
     // URL with padding
     elen = xylem_base64_encode_url(input, 1, enc, sizeof(enc), true);
-    assert(elen == 4);
-    assert(memcmp(enc, "QQ==", 4) == 0);
+    ASSERT(elen == 4);
+    ASSERT(memcmp(enc, "QQ==", 4) == 0);
     dlen = xylem_base64_decode_url(enc, 4, dec, sizeof(dec), true);
-    assert(dlen == 1 && dec[0] == 0x41);
+    ASSERT(dlen == 1 && dec[0] == 0x41);
 
     // URL without padding
     elen = xylem_base64_encode_url(input, 1, enc, sizeof(enc), false);
-    assert(elen == 2);
-    assert(memcmp(enc, "QQ", 2) == 0);
+    ASSERT(elen == 2);
+    ASSERT(memcmp(enc, "QQ", 2) == 0);
     dlen = xylem_base64_decode_url(enc, 2, dec, sizeof(dec), false);
-    assert(dlen == 1 && dec[0] == 0x41);
+    ASSERT(dlen == 1 && dec[0] == 0x41);
 }
 
 /**
@@ -87,20 +88,20 @@ static void test_two_bytes(void) {
     uint8_t enc[10], dec[10];
 
     int elen = xylem_base64_encode_std(input, 2, enc, sizeof(enc));
-    assert(elen == 4);
-    assert(memcmp(enc, "QUI=", 4) == 0);
+    ASSERT(elen == 4);
+    ASSERT(memcmp(enc, "QUI=", 4) == 0);
 
     int dlen = xylem_base64_decode_std(enc, 4, dec, sizeof(dec));
-    assert(dlen == 2);
-    assert(dec[0] == 0x41 && dec[1] == 0x42);
+    ASSERT(dlen == 2);
+    ASSERT(dec[0] == 0x41 && dec[1] == 0x42);
 
     // URL without padding
     elen = xylem_base64_encode_url(input, 2, enc, sizeof(enc), false);
-    assert(elen == 3);
-    assert(memcmp(enc, "QUI", 3) == 0);
+    ASSERT(elen == 3);
+    ASSERT(memcmp(enc, "QUI", 3) == 0);
     dlen = xylem_base64_decode_url(enc, 3, dec, sizeof(dec), false);
-    assert(dlen == 2);
-    assert(dec[0] == 0x41 && dec[1] == 0x42);
+    ASSERT(dlen == 2);
+    ASSERT(dec[0] == 0x41 && dec[1] == 0x42);
 }
 
 /**
@@ -111,20 +112,20 @@ static void test_three_bytes(void) {
     uint8_t enc[10], dec[10];
 
     int elen = xylem_base64_encode_std(input, 3, enc, sizeof(enc));
-    assert(elen == 4);
-    assert(memcmp(enc, "QUJD", 4) == 0);
+    ASSERT(elen == 4);
+    ASSERT(memcmp(enc, "QUJD", 4) == 0);
 
     int dlen = xylem_base64_decode_std(enc, 4, dec, sizeof(dec));
-    assert(dlen == 3);
-    assert(memcmp(dec, input, 3) == 0);
+    ASSERT(dlen == 3);
+    ASSERT(memcmp(dec, input, 3) == 0);
 
     // URL mode (same output since no padding needed)
     elen = xylem_base64_encode_url(input, 3, enc, sizeof(enc), false);
-    assert(elen == 4);
-    assert(memcmp(enc, "QUJD", 4) == 0);
+    ASSERT(elen == 4);
+    ASSERT(memcmp(enc, "QUJD", 4) == 0);
     dlen = xylem_base64_decode_url(enc, 4, dec, sizeof(dec), false);
-    assert(dlen == 3);
-    assert(memcmp(dec, input, 3) == 0);
+    ASSERT(dlen == 3);
+    ASSERT(memcmp(dec, input, 3) == 0);
 }
 
 /**
@@ -135,12 +136,12 @@ static void test_multi_block(void) {
     uint8_t enc[20], dec[20];
 
     int elen = xylem_base64_encode_std(input, 6, enc, sizeof(enc));
-    assert(elen == 8);
-    assert(memcmp(enc, "SGVsbG8h", 8) == 0);
+    ASSERT(elen == 8);
+    ASSERT(memcmp(enc, "SGVsbG8h", 8) == 0);
 
     int dlen = xylem_base64_decode_std(enc, 8, dec, sizeof(dec));
-    assert(dlen == 6);
-    assert(memcmp(dec, input, 6) == 0);
+    ASSERT(dlen == 6);
+    ASSERT(memcmp(dec, input, 6) == 0);
 }
 
 /**
@@ -151,18 +152,18 @@ static void test_illegal_characters(void) {
     uint8_t dec[10];
 
     // Standard: '!' is invalid
-    assert(
+    ASSERT(
         xylem_base64_decode_std((uint8_t*)"AB!D", 4, dec, sizeof(dec)) == -1);
 
     // URL: '+' is invalid in URL mode
-    assert(
+    ASSERT(
         xylem_base64_decode_url((uint8_t*)"AB+D", 4, dec, sizeof(dec), false) ==
         -1);
 
     // But '_' is valid in URL
     int dlen =
         xylem_base64_decode_url((uint8_t*)"AB_D", 4, dec, sizeof(dec), false);
-    assert(dlen >= 0); // should succeed
+    ASSERT(dlen >= 0); // should succeed
 }
 
 /**
@@ -172,11 +173,11 @@ static void test_illegal_characters(void) {
 static void test_malformed_padding(void) {
     uint8_t dec[10];
 
-    assert(
+    ASSERT(
         xylem_base64_decode_std((uint8_t*)"Q=Q=", 4, dec, sizeof(dec)) == -1);
-    assert(
+    ASSERT(
         xylem_base64_decode_std((uint8_t*)"=QQQ", 4, dec, sizeof(dec)) == -1);
-    assert(
+    ASSERT(
         xylem_base64_decode_std((uint8_t*)"Q===", 4, dec, sizeof(dec)) == -1);
 }
 
@@ -188,19 +189,19 @@ static void test_non_multiple_of_4(void) {
     uint8_t dec[10];
 
     // Standard mode: reject
-    assert(xylem_base64_decode_std((uint8_t*)"QQ", 2, dec, sizeof(dec)) == -1);
-    assert(xylem_base64_decode_std((uint8_t*)"QUI", 3, dec, sizeof(dec)) == -1);
+    ASSERT(xylem_base64_decode_std((uint8_t*)"QQ", 2, dec, sizeof(dec)) == -1);
+    ASSERT(xylem_base64_decode_std((uint8_t*)"QUI", 3, dec, sizeof(dec)) == -1);
 
     // URL mode without padding: accept
-    assert(
+    ASSERT(
         xylem_base64_decode_url((uint8_t*)"QQ", 2, dec, sizeof(dec), false) >=
         0);
-    assert(
+    ASSERT(
         xylem_base64_decode_url((uint8_t*)"QUI", 3, dec, sizeof(dec), false) >=
         0);
 
     // URL mode with padding: reject (not multiple of 4)
-    assert(
+    ASSERT(
         xylem_base64_decode_url((uint8_t*)"QQ", 2, dec, sizeof(dec), true) ==
         -1);
 }
@@ -215,10 +216,10 @@ static void test_insufficient_buffer(void) {
     uint8_t tiny_dec[2]; // needs 3 for decode of 4-char input
 
     // Encode: dlen=3 < required 4 ¡ú -1
-    assert(xylem_base64_encode_std(input, 1, tiny_enc, 3) == -1);
+    ASSERT(xylem_base64_encode_std(input, 1, tiny_enc, 3) == -1);
 
     // Decode: dlen=2 < ((4+3)/4)*3 = 3 ¡ú -1
-    assert(xylem_base64_decode_std((uint8_t*)"QQ==", 4, tiny_dec, 2) == -1);
+    ASSERT(xylem_base64_decode_std((uint8_t*)"QQ==", 4, tiny_dec, 2) == -1);
 }
 
 /**
@@ -236,17 +237,17 @@ static void test_round_trip(void) {
 
         // Standard round-trip
         int elen = xylem_base64_encode_std(input, n, enc, sizeof(enc));
-        assert(elen >= 0);
+        ASSERT(elen >= 0);
         int dlen = xylem_base64_decode_std(enc, elen, dec, sizeof(dec));
-        assert(dlen == n);
-        assert(memcmp(input, dec, n) == 0);
+        ASSERT(dlen == n);
+        ASSERT(memcmp(input, dec, n) == 0);
 
         // URL round-trip (without padding)
         elen = xylem_base64_encode_url(input, n, enc, sizeof(enc), false);
-        assert(elen >= 0);
+        ASSERT(elen >= 0);
         dlen = xylem_base64_decode_url(enc, elen, dec, sizeof(dec), false);
-        assert(dlen == n);
-        assert(memcmp(input, dec, n) == 0);
+        ASSERT(dlen == n);
+        ASSERT(memcmp(input, dec, n) == 0);
     }
 }
 
@@ -259,11 +260,11 @@ static void test_extreme_bytes(void) {
     uint8_t enc[32], dec[16];
 
     int elen = xylem_base64_encode_std(input, 4, enc, sizeof(enc));
-    assert(elen == 8); // 4 bytes ¡ú ceil(4/3)*4 = 8
+    ASSERT(elen == 8); // 4 bytes ¡ú ceil(4/3)*4 = 8
 
     int dlen = xylem_base64_decode_std(enc, elen, dec, sizeof(dec));
-    assert(dlen == 4);
-    assert(memcmp(input, dec, 4) == 0);
+    ASSERT(dlen == 4);
+    ASSERT(memcmp(input, dec, 4) == 0);
 }
 
 /**
@@ -283,11 +284,11 @@ static void test_reject_nonzero_padding_bits(void) {
 
     int len =
         xylem_base64_decode_std((const uint8_t*)"QQ==", 4, buf, sizeof(buf));
-    assert(len == 1);
-    assert(buf[0] == 0x41);
+    ASSERT(len == 1);
+    ASSERT(buf[0] == 0x41);
 
     len = xylem_base64_decode_std((const uint8_t*)"QR==", 4, buf, sizeof(buf));
-    assert(len == -1);
+    ASSERT(len == -1);
 }
 
 int main(void) {

@@ -184,7 +184,6 @@ size_t xylem_ringbuf_write(
     if (entry_count > avail) {
         entry_count = avail;
     }
-    assert(entry_count <= UINT32_MAX);
     uint32_t count32 = (uint32_t)entry_count;
 
     _ringbuffer_internal_write(ring, buf, count32, ring->wpos);
@@ -195,7 +194,6 @@ size_t xylem_ringbuf_write(
 
 size_t
 xylem_ringbuf_read(xylem_ringbuf_t* ring, void* buf, size_t entry_count) {
-    assert(entry_count <= UINT32_MAX);
     uint32_t count32 = (uint32_t)entry_count;
 
     uint32_t actual = _ringbuffer_internal_read_peek(ring, buf, count32);

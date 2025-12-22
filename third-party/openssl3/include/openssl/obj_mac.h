@@ -2814,10 +2814,10 @@
 #define NID_indirect_issuer             1305
 #define OBJ_indirect_issuer             OBJ_id_ce,61L
 
-#define SN_no_assertion         "noAssertion"
-#define LN_no_assertion         "X509v3 No Assertion"
-#define NID_no_assertion                1306
-#define OBJ_no_assertion                OBJ_id_ce,62L
+#define SN_no_ASSERTion         "noAssertion"
+#define LN_no_ASSERTion         "X509v3 No Assertion"
+#define NID_no_ASSERTion                1306
+#define OBJ_no_ASSERTion                OBJ_id_ce,62L
 
 #define SN_id_aa_issuing_distribution_point             "aAissuingDistributionPoint"
 #define LN_id_aa_issuing_distribution_point             "X509v3 Attribute Authority Issuing Distribution Point"

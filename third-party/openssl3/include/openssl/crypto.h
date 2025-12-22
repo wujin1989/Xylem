@@ -413,12 +413,12 @@ OSSL_DEPRECATEDIN_3_0 int CRYPTO_mem_leaks(BIO *bio);
 # endif /* OPENSSL_NO_CRYPTO_MDEBUG */
 
 /* die if we have to */
-ossl_noreturn void OPENSSL_die(const char *assertion, const char *file, int line);
+ossl_noreturn void OPENSSL_die(const char *ASSERTion, const char *file, int line);
 # ifndef OPENSSL_NO_DEPRECATED_1_1_0
 #  define OpenSSLDie(f,l,a) OPENSSL_die((a),(f),(l))
 # endif
-# define OPENSSL_assert(e) \
-    (void)((e) ? 0 : (OPENSSL_die("assertion failed: " #e, OPENSSL_FILE, OPENSSL_LINE), 1))
+# define OPENSSL_ASSERT(e) \
+    (void)((e) ? 0 : (OPENSSL_die("ASSERTion failed: " #e, OPENSSL_FILE, OPENSSL_LINE), 1))
 
 int OPENSSL_isservice(void);
 

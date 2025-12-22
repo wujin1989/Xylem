@@ -1,4 +1,5 @@
 #include "xylem.h"
+#include "assert.h"
 
 #define THREAD_COUNT 10
 #define STRESS_THREADS 20
@@ -40,14 +41,14 @@ static int worker_thread_completion(void* arg) {
 
 static void test_create_destroy(void) {
     xylem_waitgroup_t* wg = xylem_waitgroup_create();
-    assert(wg != NULL);
+    ASSERT(wg != NULL);
     xylem_waitgroup_destroy(wg);
     xylem_waitgroup_destroy(NULL);
 }
 
 static void test_basic_operations(void) {
     xylem_waitgroup_t* wg = xylem_waitgroup_create();
-    assert(wg != NULL);
+    ASSERT(wg != NULL);
     xylem_waitgroup_add(wg, 0);
     xylem_waitgroup_done(wg);
     xylem_waitgroup_add(wg, 3);
@@ -64,18 +65,18 @@ static void test_multiple_threads(void) {
     worker_started = 0;
 
     xylem_waitgroup_t* wg = xylem_waitgroup_create();
-    assert(wg != NULL);
+    ASSERT(wg != NULL);
     xylem_waitgroup_add(wg, THREAD_COUNT);
 
     for (int i = 0; i < THREAD_COUNT; i++) {
         int result = thrd_create(&threads[i], worker_thread, wg);
-        assert(result == thrd_success);
+        ASSERT(result == thrd_success);
     }
     while (atomic_load(&worker_started) < THREAD_COUNT) {
         thrd_yield();
     }
     xylem_waitgroup_wait(wg);
-    assert(atomic_load(&worker_completed) == THREAD_COUNT);
+    ASSERT(atomic_load(&worker_completed) == THREAD_COUNT);
     xylem_waitgroup_wait(wg);
 
     for (int i = 0; i < THREAD_COUNT; i++) {
@@ -86,11 +87,11 @@ static void test_multiple_threads(void) {
 
 static void test_early_done(void) {
     xylem_waitgroup_t* wg = xylem_waitgroup_create();
-    assert(wg != NULL);
+    ASSERT(wg != NULL);
     thrd_t thread;
     xylem_waitgroup_add(wg, 1);
     int result = thrd_create(&thread, early_done_thread, wg);
-    assert(result == thrd_success);
+    ASSERT(result == thrd_success);
     xylem_waitgroup_wait(wg);
     thrd_join(thread, NULL);
     xylem_waitgroup_destroy(wg);
@@ -98,7 +99,7 @@ static void test_early_done(void) {
 
 static void test_repeated_done(void) {
     xylem_waitgroup_t* wg = xylem_waitgroup_create();
-    assert(wg != NULL);
+    ASSERT(wg != NULL);
     xylem_waitgroup_done(wg);
     xylem_waitgroup_done(wg);
     xylem_waitgroup_done(wg);
@@ -108,7 +109,7 @@ static void test_repeated_done(void) {
 
 static void test_large_delta(void) {
     xylem_waitgroup_t* wg = xylem_waitgroup_create();
-    assert(wg != NULL);
+    ASSERT(wg != NULL);
     const size_t LARGE_COUNT = 1000;
     xylem_waitgroup_add(wg, LARGE_COUNT);
     for (size_t i = 0; i < LARGE_COUNT; i++) {
@@ -121,14 +122,14 @@ static void test_large_delta(void) {
 static void test_concurrent_stress(void) {
     srand((unsigned int)time(NULL));
     xylem_waitgroup_t* wg = xylem_waitgroup_create();
-    assert(wg != NULL);
+    ASSERT(wg != NULL);
     thrd_t threads[STRESS_THREADS];
 
     xylem_waitgroup_add(wg, STRESS_THREADS);
 
     for (int i = 0; i < STRESS_THREADS; i++) {
         int result = thrd_create(&threads[i], worker_thread_completion, wg);
-        assert(result == thrd_success);
+        ASSERT(result == thrd_success);
     }
     xylem_waitgroup_wait(wg);
 

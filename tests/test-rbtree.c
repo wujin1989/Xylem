@@ -1,4 +1,5 @@
 #include "xylem.h"
+#include "assert.h"
 
 #define RB_RED 0
 #define RB_BLACK 1
@@ -31,7 +32,7 @@ static int cmp_kn(const void* key, const xylem_rbtree_node_t* node) {
 
 static test_node_t* create_test_node(int key, int value) {
     test_node_t* node = (test_node_t*)malloc(sizeof(test_node_t));
-    assert(node != NULL);
+    ASSERT(node != NULL);
     node->key = key;
     node->value = value;
     return node;
@@ -56,7 +57,7 @@ static void validate_tree_order(xylem_rbtree_t* tree) {
             test_node_t* prev =
                 xylem_rbtree_entry(prev_node, test_node_t, node);
             test_node_t* curr = xylem_rbtree_entry(node, test_node_t, node);
-            assert(curr->key > prev->key);
+            ASSERT(curr->key > prev->key);
         }
         prev_node = node;
         node = xylem_rbtree_next(node);
@@ -73,33 +74,33 @@ verify_rbtree_node(xylem_rbtree_node_t* node, int* black_height, int is_root) {
     test_node_t* current = xylem_rbtree_entry(node, test_node_t, node);
 
     if (is_root) {
-        assert(node->color == RB_BLACK);
+        ASSERT(node->color == RB_BLACK);
     }
 
     if (node->color == RB_RED) {
         if (node->left) {
-            assert(node->left->color == RB_BLACK);
+            ASSERT(node->left->color == RB_BLACK);
         }
         if (node->right) {
-            assert(node->right->color == RB_BLACK);
+            ASSERT(node->right->color == RB_BLACK);
         }
     }
 
     if (node->left) {
         test_node_t* left = xylem_rbtree_entry(node->left, test_node_t, node);
-        assert(left->key < current->key);
+        ASSERT(left->key < current->key);
     }
 
     if (node->right) {
         test_node_t* right = xylem_rbtree_entry(node->right, test_node_t, node);
-        assert(right->key > current->key);
+        ASSERT(right->key > current->key);
     }
 
     int left_black_height, right_black_height;
-    assert(verify_rbtree_node(node->left, &left_black_height, 0));
-    assert(verify_rbtree_node(node->right, &right_black_height, 0));
+    ASSERT(verify_rbtree_node(node->left, &left_black_height, 0));
+    ASSERT(verify_rbtree_node(node->right, &right_black_height, 0));
 
-    assert(left_black_height == right_black_height);
+    ASSERT(left_black_height == right_black_height);
 
     *black_height = left_black_height + (node->color == RB_BLACK ? 1 : 0);
     return 1;
@@ -110,10 +111,10 @@ static void verify_rbtree_properties(xylem_rbtree_t* tree) {
         return;
     }
 
-    assert(tree->root->color == RB_BLACK);
+    ASSERT(tree->root->color == RB_BLACK);
 
     int black_height;
-    assert(verify_rbtree_node(tree->root, &black_height, 1));
+    ASSERT(verify_rbtree_node(tree->root, &black_height, 1));
 
     validate_tree_order(tree);
 }
@@ -121,26 +122,26 @@ static void verify_rbtree_properties(xylem_rbtree_t* tree) {
 static void test_insertion_patterns() {
     {
         xylem_rbtree_t tree;
-        assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+        ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
         const int N = 100;
         for (int i = 0; i < N; i++) {
             test_node_t* node = create_test_node(i, i * 10);
-            assert(xylem_rbtree_insert(&tree, &node->node) == XYLEM_RBTREE_OK);
+            ASSERT(xylem_rbtree_insert(&tree, &node->node) == XYLEM_RBTREE_OK);
             verify_rbtree_properties(&tree);
         }
 
-        assert(count_nodes(tree.root) == N);
+        ASSERT(count_nodes(tree.root) == N);
 
         xylem_rbtree_node_t* node = xylem_rbtree_first(&tree);
         int                  expected = 0;
         while (node) {
             test_node_t* current = xylem_rbtree_entry(node, test_node_t, node);
-            assert(current->key == expected);
+            ASSERT(current->key == expected);
             expected++;
             node = xylem_rbtree_next(node);
         }
-        assert(expected == N);
+        ASSERT(expected == N);
 
         node = xylem_rbtree_first(&tree);
         while (node) {
@@ -154,26 +155,26 @@ static void test_insertion_patterns() {
 
     {
         xylem_rbtree_t tree;
-        assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+        ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
         const int N = 100;
         for (int i = N - 1; i >= 0; i--) {
             test_node_t* node = create_test_node(i, i * 10);
-            assert(xylem_rbtree_insert(&tree, &node->node) == XYLEM_RBTREE_OK);
+            ASSERT(xylem_rbtree_insert(&tree, &node->node) == XYLEM_RBTREE_OK);
             verify_rbtree_properties(&tree);
         }
 
-        assert(count_nodes(tree.root) == N);
+        ASSERT(count_nodes(tree.root) == N);
 
         xylem_rbtree_node_t* node = xylem_rbtree_first(&tree);
         int                  expected = 0;
         while (node) {
             test_node_t* current = xylem_rbtree_entry(node, test_node_t, node);
-            assert(current->key == expected);
+            ASSERT(current->key == expected);
             expected++;
             node = xylem_rbtree_next(node);
         }
-        assert(expected == N);
+        ASSERT(expected == N);
 
         node = xylem_rbtree_first(&tree);
         while (node) {
@@ -187,7 +188,7 @@ static void test_insertion_patterns() {
 
     {
         xylem_rbtree_t tree;
-        assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+        ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
         const int N = 100;
         for (int i = 0; i < N; i++) {
@@ -210,13 +211,13 @@ static void test_insertion_patterns() {
 
 static void test_deletion_patterns() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     test_node_t* nodes[100];
 
     for (int i = 0; i < 100; i++) {
         nodes[i] = create_test_node(i, i * 10);
-        assert(xylem_rbtree_insert(&tree, &nodes[i]->node) == XYLEM_RBTREE_OK);
+        ASSERT(xylem_rbtree_insert(&tree, &nodes[i]->node) == XYLEM_RBTREE_OK);
     }
 
     verify_rbtree_properties(&tree);
@@ -250,7 +251,7 @@ static void test_deletion_patterns() {
 
 static void test_stress_insert_delete() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     srand(time(NULL));
     const int N = 10000;
@@ -295,7 +296,7 @@ static void test_stress_insert_delete() {
             if (exists[idx]) {
                 int                  key = idx;
                 xylem_rbtree_node_t* found = xylem_rbtree_find(&tree, &key);
-                assert(found != NULL);
+                ASSERT(found != NULL);
                 finds++;
             }
             break;
@@ -318,42 +319,42 @@ static void test_stress_insert_delete() {
     free(nodes);
     free(exists);
 
-    assert(xylem_rbtree_empty(&tree));
+    ASSERT(xylem_rbtree_empty(&tree));
 }
 
 static void test_iterator_edge_cases() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
-    assert(xylem_rbtree_first(&tree) == NULL);
-    assert(xylem_rbtree_last(&tree) == NULL);
+    ASSERT(xylem_rbtree_first(&tree) == NULL);
+    ASSERT(xylem_rbtree_last(&tree) == NULL);
 
     test_node_t* single = create_test_node(50, 500);
-    assert(xylem_rbtree_insert(&tree, &single->node) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_insert(&tree, &single->node) == XYLEM_RBTREE_OK);
 
-    assert(xylem_rbtree_prev(&single->node) == NULL);
-    assert(xylem_rbtree_next(&single->node) == NULL);
-    assert(xylem_rbtree_first(&tree) == &single->node);
-    assert(xylem_rbtree_last(&tree) == &single->node);
+    ASSERT(xylem_rbtree_prev(&single->node) == NULL);
+    ASSERT(xylem_rbtree_next(&single->node) == NULL);
+    ASSERT(xylem_rbtree_first(&tree) == &single->node);
+    ASSERT(xylem_rbtree_last(&tree) == &single->node);
 
     test_node_t* left = create_test_node(25, 250);
     test_node_t* right = create_test_node(75, 750);
-    assert(xylem_rbtree_insert(&tree, &left->node) == XYLEM_RBTREE_OK);
-    assert(xylem_rbtree_insert(&tree, &right->node) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_insert(&tree, &left->node) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_insert(&tree, &right->node) == XYLEM_RBTREE_OK);
 
     verify_rbtree_properties(&tree);
 
     test_node_t* left_entry =
         xylem_rbtree_entry(xylem_rbtree_prev(&single->node), test_node_t, node);
-    assert(left_entry == left);
+    ASSERT(left_entry == left);
 
     test_node_t* right_entry =
         xylem_rbtree_entry(xylem_rbtree_next(&single->node), test_node_t, node);
-    assert(right_entry == right);
+    ASSERT(right_entry == right);
 
-    assert(xylem_rbtree_prev(&left->node) == NULL);
+    ASSERT(xylem_rbtree_prev(&left->node) == NULL);
 
-    assert(xylem_rbtree_next(&right->node) == NULL);
+    ASSERT(xylem_rbtree_next(&right->node) == NULL);
 
     xylem_rbtree_erase(&tree, &single->node);
     xylem_rbtree_erase(&tree, &left->node);
@@ -366,37 +367,37 @@ static void test_iterator_edge_cases() {
 
 static void test_duplicate_operations() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     const int N = 1000;
 
     test_node_t* node = create_test_node(42, 420);
-    assert(xylem_rbtree_insert(&tree, &node->node) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_insert(&tree, &node->node) == XYLEM_RBTREE_OK);
 
     for (int i = 0; i < 10; i++) {
         test_node_t* dup = create_test_node(42, i);
-        assert(xylem_rbtree_insert(&tree, &dup->node) == XYLEM_RBTREE_DUP);
+        ASSERT(xylem_rbtree_insert(&tree, &dup->node) == XYLEM_RBTREE_DUP);
         free_test_node(dup);
     }
 
     verify_rbtree_properties(&tree);
-    assert(count_nodes(tree.root) == 1);
+    ASSERT(count_nodes(tree.root) == 1);
 
     xylem_rbtree_erase(&tree, &node->node);
     xylem_rbtree_erase(&tree, &node->node);
     xylem_rbtree_erase(&tree, &node->node);
 
-    assert(xylem_rbtree_empty(&tree));
+    ASSERT(xylem_rbtree_empty(&tree));
     free_test_node(node);
 
     test_node_t** nodes = (test_node_t**)malloc(N * sizeof(test_node_t*));
     for (int i = 0; i < N; i++) {
         nodes[i] = create_test_node(i, i * 10);
-        assert(xylem_rbtree_insert(&tree, &nodes[i]->node) == XYLEM_RBTREE_OK);
+        ASSERT(xylem_rbtree_insert(&tree, &nodes[i]->node) == XYLEM_RBTREE_OK);
     }
 
     verify_rbtree_properties(&tree);
-    assert(count_nodes(tree.root) == N);
+    ASSERT(count_nodes(tree.root) == N);
 
     srand(time(NULL));
     int remaining = N;
@@ -410,23 +411,23 @@ static void test_duplicate_operations() {
 
             if (remaining % 100 == 0) {
                 verify_rbtree_properties(&tree);
-                assert(count_nodes(tree.root) == remaining);
+                ASSERT(count_nodes(tree.root) == remaining);
             }
         }
     }
 
     free(nodes);
-    assert(xylem_rbtree_empty(&tree));
+    ASSERT(xylem_rbtree_empty(&tree));
 }
 
 static void test_color_properties() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     for (int i = 0; i < 100; i++) {
         test_node_t* node = create_test_node(i, i * 10);
-        assert(xylem_rbtree_insert(&tree, &node->node) == XYLEM_RBTREE_OK);
-        assert(tree.root->color == RB_BLACK);
+        ASSERT(xylem_rbtree_insert(&tree, &node->node) == XYLEM_RBTREE_OK);
+        ASSERT(tree.root->color == RB_BLACK);
         verify_rbtree_properties(&tree);
     }
 
@@ -437,7 +438,7 @@ static void test_color_properties() {
             test_node_t* node = xylem_rbtree_entry(found, test_node_t, node);
             xylem_rbtree_erase(&tree, found);
             free_test_node(node);
-            assert(tree.root ? tree.root->color == RB_BLACK : 1);
+            ASSERT(tree.root ? tree.root->color == RB_BLACK : 1);
             verify_rbtree_properties(&tree);
         }
     }
@@ -451,18 +452,18 @@ static void test_color_properties() {
         curr = next;
     }
 
-    assert(xylem_rbtree_empty(&tree));
+    ASSERT(xylem_rbtree_empty(&tree));
 }
 
 static void test_tree_balance() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     const int N = 10000;
 
     for (int i = 0; i < N; i++) {
         test_node_t* node = create_test_node(i, i * 10);
-        assert(xylem_rbtree_insert(&tree, &node->node) == XYLEM_RBTREE_OK);
+        ASSERT(xylem_rbtree_insert(&tree, &node->node) == XYLEM_RBTREE_OK);
     }
 
     verify_rbtree_properties(&tree);
@@ -479,35 +480,35 @@ static void test_tree_balance() {
         curr = next;
     }
 
-    assert(xylem_rbtree_empty(&tree));
+    ASSERT(xylem_rbtree_empty(&tree));
 }
 
 static void test_basic_insert_and_find() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
-    assert(xylem_rbtree_empty(&tree));
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_empty(&tree));
 
     test_node_t* node1 = create_test_node(10, 100);
-    assert(xylem_rbtree_insert(&tree, &node1->node) == XYLEM_RBTREE_OK);
-    assert(!xylem_rbtree_empty(&tree));
-    assert(tree.root == &node1->node);
+    ASSERT(xylem_rbtree_insert(&tree, &node1->node) == XYLEM_RBTREE_OK);
+    ASSERT(!xylem_rbtree_empty(&tree));
+    ASSERT(tree.root == &node1->node);
 
     test_node_t* node2 = create_test_node(5, 50);
-    assert(xylem_rbtree_insert(&tree, &node2->node) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_insert(&tree, &node2->node) == XYLEM_RBTREE_OK);
 
     test_node_t* node3 = create_test_node(15, 150);
-    assert(xylem_rbtree_insert(&tree, &node3->node) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_insert(&tree, &node3->node) == XYLEM_RBTREE_OK);
 
     test_node_t* dup = create_test_node(10, 200);
-    assert(xylem_rbtree_insert(&tree, &dup->node) == XYLEM_RBTREE_DUP);
+    ASSERT(xylem_rbtree_insert(&tree, &dup->node) == XYLEM_RBTREE_DUP);
     free_test_node(dup);
 
     int                  key = 10;
     xylem_rbtree_node_t* found = xylem_rbtree_find(&tree, &key);
-    assert(found == &node1->node);
+    ASSERT(found == &node1->node);
 
     int not_found_key = 20;
-    assert(xylem_rbtree_find(&tree, &not_found_key) == NULL);
+    ASSERT(xylem_rbtree_find(&tree, &not_found_key) == NULL);
 
     xylem_rbtree_erase(&tree, &node1->node);
     xylem_rbtree_erase(&tree, &node2->node);
@@ -520,25 +521,25 @@ static void test_basic_insert_and_find() {
 
 static void test_edge_insertions() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     test_node_t* min_node = create_test_node(INT_MIN, 1);
-    assert(xylem_rbtree_insert(&tree, &min_node->node) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_insert(&tree, &min_node->node) == XYLEM_RBTREE_OK);
 
     test_node_t* max_node = create_test_node(INT_MAX, 2);
-    assert(xylem_rbtree_insert(&tree, &max_node->node) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_insert(&tree, &max_node->node) == XYLEM_RBTREE_OK);
 
     test_node_t* zero_node = create_test_node(0, 3);
-    assert(xylem_rbtree_insert(&tree, &zero_node->node) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_insert(&tree, &zero_node->node) == XYLEM_RBTREE_OK);
 
     int key = INT_MIN;
-    assert(xylem_rbtree_find(&tree, &key) == &min_node->node);
+    ASSERT(xylem_rbtree_find(&tree, &key) == &min_node->node);
 
     key = INT_MAX;
-    assert(xylem_rbtree_find(&tree, &key) == &max_node->node);
+    ASSERT(xylem_rbtree_find(&tree, &key) == &max_node->node);
 
     key = 0;
-    assert(xylem_rbtree_find(&tree, &key) == &zero_node->node);
+    ASSERT(xylem_rbtree_find(&tree, &key) == &zero_node->node);
 
     verify_rbtree_properties(&tree);
 
@@ -553,34 +554,34 @@ static void test_edge_insertions() {
 
 static void test_massive_insert_delete() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     const int     N = 10000;
     test_node_t** nodes = (test_node_t**)malloc(N * sizeof(test_node_t*));
-    assert(nodes != NULL);
+    ASSERT(nodes != NULL);
 
     for (int i = 0; i < N; i++) {
         nodes[i] = create_test_node(i, i * 10);
-        assert(xylem_rbtree_insert(&tree, &nodes[i]->node) == XYLEM_RBTREE_OK);
+        ASSERT(xylem_rbtree_insert(&tree, &nodes[i]->node) == XYLEM_RBTREE_OK);
     }
-    assert(count_nodes(tree.root) == N);
+    ASSERT(count_nodes(tree.root) == N);
     verify_rbtree_properties(&tree);
 
     for (int i = 0; i < N; i += 2) {
         xylem_rbtree_erase(&tree, &nodes[i]->node);
     }
-    assert(count_nodes(tree.root) == N / 2);
+    ASSERT(count_nodes(tree.root) == N / 2);
     verify_rbtree_properties(&tree);
 
     for (int i = 1; i < N; i += 2) {
         int                  key = i;
         xylem_rbtree_node_t* found = xylem_rbtree_find(&tree, &key);
-        assert(found == &nodes[i]->node);
+        ASSERT(found == &nodes[i]->node);
     }
     for (int i = 1; i < N; i += 2) {
         xylem_rbtree_erase(&tree, &nodes[i]->node);
     }
-    assert(xylem_rbtree_empty(&tree));
+    ASSERT(xylem_rbtree_empty(&tree));
 
     for (int i = 0; i < N; i++) {
         free_test_node(nodes[i]);
@@ -590,21 +591,21 @@ static void test_massive_insert_delete() {
 
 static void test_reverse_order_insert() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     const int N = 1000;
     for (int i = N - 1; i >= 0; i--) {
         test_node_t* node = create_test_node(i, i);
-        assert(xylem_rbtree_insert(&tree, &node->node) == XYLEM_RBTREE_OK);
+        ASSERT(xylem_rbtree_insert(&tree, &node->node) == XYLEM_RBTREE_OK);
         xylem_rbtree_erase(&tree, &node->node);
         free_test_node(node);
     }
-    assert(xylem_rbtree_empty(&tree));
+    ASSERT(xylem_rbtree_empty(&tree));
 }
 
 static void test_random_insert_delete() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     srand(time(NULL));
     const int     N = 5000;
@@ -643,59 +644,59 @@ static void test_random_insert_delete() {
     }
     free(nodes);
     free(inserted);
-    assert(xylem_rbtree_empty(&tree));
+    ASSERT(xylem_rbtree_empty(&tree));
 }
 
 static void test_traversal_functions(void) {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     int keys[] = {
         50, 30, 70, 20, 40, 60, 80, 10, 90, 25, 35, 45, 55, 65, 75, 85};
     const size_t N = sizeof(keys) / sizeof(keys[0]);
 
     test_node_t** nodes = (test_node_t**)malloc(N * sizeof(test_node_t*));
-    assert(nodes != NULL);
+    ASSERT(nodes != NULL);
 
     for (size_t i = 0; i < N; i++) {
         nodes[i] = create_test_node(keys[i], (int)i);
-        assert(xylem_rbtree_insert(&tree, &nodes[i]->node) == XYLEM_RBTREE_OK);
+        ASSERT(xylem_rbtree_insert(&tree, &nodes[i]->node) == XYLEM_RBTREE_OK);
     }
     verify_rbtree_properties(&tree);
 
     xylem_rbtree_node_t* first = xylem_rbtree_first(&tree);
-    assert(first != NULL);
+    ASSERT(first != NULL);
     test_node_t* first_node = xylem_rbtree_entry(first, test_node_t, node);
-    assert(first_node->key == 10);
+    ASSERT(first_node->key == 10);
 
     xylem_rbtree_node_t* last = xylem_rbtree_last(&tree);
-    assert(last != NULL);
+    ASSERT(last != NULL);
     test_node_t* last_node = xylem_rbtree_entry(last, test_node_t, node);
-    assert(last_node->key == 90);
+    ASSERT(last_node->key == 90);
 
     xylem_rbtree_node_t* curr = first;
     int                  prev_key = INT_MIN;
     size_t               count = 0;
     while (curr) {
         test_node_t* curr_node = xylem_rbtree_entry(curr, test_node_t, node);
-        assert(curr_node->key > prev_key);
+        ASSERT(curr_node->key > prev_key);
         prev_key = curr_node->key;
         curr = xylem_rbtree_next(curr);
         count++;
     }
-    assert(count == N);
+    ASSERT(count == N);
 
     curr = last;
     prev_key = INT_MAX;
     count = 0;
     while (curr) {
         test_node_t* curr_node = xylem_rbtree_entry(curr, test_node_t, node);
-        assert(curr_node->key < prev_key);
+        ASSERT(curr_node->key < prev_key);
         prev_key = curr_node->key;
         curr = xylem_rbtree_prev(curr);
         count++;
     }
-    assert(count == N);
+    ASSERT(count == N);
 
     for (size_t i = 0; i < N; i++) {
         xylem_rbtree_erase(&tree, &nodes[i]->node);
@@ -705,24 +706,24 @@ static void test_traversal_functions(void) {
 }
 
 static void test_null_parameters() {
-    assert(xylem_rbtree_init(NULL, cmp_nn, cmp_kn) == XYLEM_RBTREE_ERR);
+    ASSERT(xylem_rbtree_init(NULL, cmp_nn, cmp_kn) == XYLEM_RBTREE_ERR);
 
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, NULL, cmp_kn) == XYLEM_RBTREE_ERR);
-    assert(xylem_rbtree_init(&tree, cmp_nn, NULL) == XYLEM_RBTREE_ERR);
+    ASSERT(xylem_rbtree_init(&tree, NULL, cmp_kn) == XYLEM_RBTREE_ERR);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, NULL) == XYLEM_RBTREE_ERR);
 
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     test_node_t* node = create_test_node(1, 1);
-    assert(xylem_rbtree_insert(NULL, &node->node) == XYLEM_RBTREE_ERR);
-    assert(xylem_rbtree_insert(&tree, NULL) == XYLEM_RBTREE_ERR);
+    ASSERT(xylem_rbtree_insert(NULL, &node->node) == XYLEM_RBTREE_ERR);
+    ASSERT(xylem_rbtree_insert(&tree, NULL) == XYLEM_RBTREE_ERR);
 
     int key = 1;
-    assert(xylem_rbtree_find(NULL, &key) == NULL);
-    assert(xylem_rbtree_find(&tree, NULL) == NULL);
+    ASSERT(xylem_rbtree_find(NULL, &key) == NULL);
+    ASSERT(xylem_rbtree_find(&tree, NULL) == NULL);
 
-    assert(xylem_rbtree_first(NULL) == NULL);
-    assert(xylem_rbtree_last(NULL) == NULL);
+    ASSERT(xylem_rbtree_first(NULL) == NULL);
+    ASSERT(xylem_rbtree_last(NULL) == NULL);
 
     xylem_rbtree_erase(NULL, &node->node);
     xylem_rbtree_erase(&tree, NULL);
@@ -734,46 +735,46 @@ static void test_null_parameters() {
 
 static void test_single_node_operations() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     test_node_t* single = create_test_node(42, 420);
-    assert(xylem_rbtree_insert(&tree, &single->node) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_insert(&tree, &single->node) == XYLEM_RBTREE_OK);
     verify_rbtree_properties(&tree);
 
-    assert(xylem_rbtree_first(&tree) == &single->node);
-    assert(xylem_rbtree_last(&tree) == &single->node);
-    assert(xylem_rbtree_next(&single->node) == NULL);
-    assert(xylem_rbtree_prev(&single->node) == NULL);
+    ASSERT(xylem_rbtree_first(&tree) == &single->node);
+    ASSERT(xylem_rbtree_last(&tree) == &single->node);
+    ASSERT(xylem_rbtree_next(&single->node) == NULL);
+    ASSERT(xylem_rbtree_prev(&single->node) == NULL);
 
     int key = 42;
-    assert(xylem_rbtree_find(&tree, &key) == &single->node);
+    ASSERT(xylem_rbtree_find(&tree, &key) == &single->node);
 
     xylem_rbtree_erase(&tree, &single->node);
-    assert(xylem_rbtree_empty(&tree));
+    ASSERT(xylem_rbtree_empty(&tree));
 
     free_test_node(single);
 }
 
 static void test_duplicate_handling() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     test_node_t* node1 = create_test_node(100, 1);
     test_node_t* node2 = create_test_node(100, 2);
     test_node_t* node3 = create_test_node(100, 3);
 
-    assert(xylem_rbtree_insert(&tree, &node1->node) == XYLEM_RBTREE_OK);
-    assert(xylem_rbtree_insert(&tree, &node2->node) == XYLEM_RBTREE_DUP);
-    assert(xylem_rbtree_insert(&tree, &node3->node) == XYLEM_RBTREE_DUP);
+    ASSERT(xylem_rbtree_insert(&tree, &node1->node) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_insert(&tree, &node2->node) == XYLEM_RBTREE_DUP);
+    ASSERT(xylem_rbtree_insert(&tree, &node3->node) == XYLEM_RBTREE_DUP);
 
     int                  key = 100;
     xylem_rbtree_node_t* found = xylem_rbtree_find(&tree, &key);
-    assert(found == &node1->node);
+    ASSERT(found == &node1->node);
     test_node_t* found_node = xylem_rbtree_entry(found, test_node_t, node);
-    assert(found_node->value == 1);
+    ASSERT(found_node->value == 1);
 
     xylem_rbtree_erase(&tree, &node1->node);
-    assert(xylem_rbtree_find(&tree, &key) == NULL);
+    ASSERT(xylem_rbtree_find(&tree, &key) == NULL);
 
     free_test_node(node1);
     free_test_node(node2);
@@ -782,13 +783,13 @@ static void test_duplicate_handling() {
 
 static void test_tree_properties_after_operations() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     test_node_t* nodes[100];
 
     for (int i = 0; i < 100; i++) {
         nodes[i] = create_test_node(i * 2, i);
-        assert(xylem_rbtree_insert(&tree, &nodes[i]->node) == XYLEM_RBTREE_OK);
+        ASSERT(xylem_rbtree_insert(&tree, &nodes[i]->node) == XYLEM_RBTREE_OK);
         verify_rbtree_properties(&tree);
     }
     for (int i = 0; i < 100; i += 3) {
@@ -803,7 +804,7 @@ static void test_tree_properties_after_operations() {
         xylem_rbtree_erase(&tree, &nodes[i]->node);
         verify_rbtree_properties(&tree);
     }
-    assert(xylem_rbtree_empty(&tree));
+    ASSERT(xylem_rbtree_empty(&tree));
 
     for (int i = 0; i < 100; i++) {
         free_test_node(nodes[i]);
@@ -812,7 +813,7 @@ static void test_tree_properties_after_operations() {
 
 static void test_large_scale_random() {
     xylem_rbtree_t tree;
-    assert(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
+    ASSERT(xylem_rbtree_init(&tree, cmp_nn, cmp_kn) == XYLEM_RBTREE_OK);
 
     srand(time(NULL));
     const int N = 100000;
@@ -843,7 +844,7 @@ static void test_large_scale_random() {
     int                  prev = INT_MIN;
     while (curr) {
         test_node_t* curr_node = xylem_rbtree_entry(curr, test_node_t, node);
-        assert(curr_node->key >= prev);
+        ASSERT(curr_node->key >= prev);
         prev = curr_node->key;
         curr = xylem_rbtree_next(curr);
         count++;
@@ -861,7 +862,7 @@ static void test_large_scale_random() {
         free_test_node(current);
         node = next;
     }
-    assert(xylem_rbtree_empty(&tree));
+    ASSERT(xylem_rbtree_empty(&tree));
 }
 
 int main() {

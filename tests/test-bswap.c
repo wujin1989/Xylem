@@ -20,6 +20,7 @@
  */
 
 #include "xylem.h"
+#include "assert.h"
 
 // Helper to extract bit representation of float
 static inline uint32_t float_bits(float f) {
@@ -44,7 +45,7 @@ static inline uint64_t double_bits(double d) {
 static void test_bswap_uint16_typical(void) {
     uint16_t input = 0x1234U;
     uint16_t expected = 0x3412U;
-    assert(xylem_bswap(input) == expected);
+    ASSERT(xylem_bswap(input) == expected);
 }
 
 /**
@@ -57,7 +58,7 @@ static void test_bswap_uint16_typical(void) {
 static void test_bswap_int16_boundary(void) {
     int16_t input = -1; // Bit pattern: 0xFFFF
     int16_t expected = -1;
-    assert(xylem_bswap(input) == expected);
+    ASSERT(xylem_bswap(input) == expected);
 }
 
 /**
@@ -70,7 +71,7 @@ static void test_bswap_int16_boundary(void) {
 static void test_bswap_uint32_typical(void) {
     uint32_t input = 0x12345678U;
     uint32_t expected = 0x78563412U;
-    assert(xylem_bswap(input) == expected);
+    ASSERT(xylem_bswap(input) == expected);
 }
 
 /**
@@ -83,7 +84,7 @@ static void test_bswap_uint32_typical(void) {
 static void test_bswap_uint64_typical(void) {
     uint64_t input = 0x0123456789ABCDEFULL;
     uint64_t expected = 0xEFCDAB8967452301ULL;
-    assert(xylem_bswap(input) == expected);
+    ASSERT(xylem_bswap(input) == expected);
 }
 
 /**
@@ -98,14 +99,14 @@ static void test_bswap_float_bitpattern(void) {
     uint32_t original_bits = float_bits(input);
     float    swapped = xylem_bswap(input);
     uint32_t swapped_bits = float_bits(swapped);
-    assert(swapped_bits == xylem_bswap_u32(original_bits));
+    ASSERT(swapped_bits == xylem_bswap_u32(original_bits));
 }
 
 /**
  * @brief Test byte-swapping of a double by verifying bit-pattern correctness.
  *
  * Since byte swapping may destroy the IEEE 754 NaN structure (by moving
- * exponent bits out of position), we do NOT assert that the result is NaN.
+ * exponent bits out of position), we do NOT ASSERT that the result is NaN.
  * Instead, we verify that the underlying bits were correctly reversed,
  * which is the sole responsibility of xylem_bswap.
  */
@@ -114,7 +115,7 @@ static void test_bswap_double_nan(void) {
     uint64_t original_bits = double_bits(input);
     double   swapped = xylem_bswap(input);
     uint64_t swapped_bits = double_bits(swapped);
-    assert(swapped_bits == xylem_bswap_u64(original_bits));
+    ASSERT(swapped_bits == xylem_bswap_u64(original_bits));
 }
 
 /**
@@ -125,14 +126,14 @@ static void test_bswap_double_nan(void) {
  * providing a lightweight sanity check for all code paths.
  */
 static void test_bswap_zero_all_types(void) {
-    assert(xylem_bswap((uint16_t)0) == 0);
-    assert(xylem_bswap((int16_t)0) == 0);
-    assert(xylem_bswap((uint32_t)0U) == 0U);
-    assert(xylem_bswap((int32_t)0) == 0);
-    assert(xylem_bswap((uint64_t)0ULL) == 0ULL);
-    assert(xylem_bswap((int64_t)0) == 0);
-    assert(xylem_bswap(0.0f) == 0.0f);
-    assert(xylem_bswap(0.0) == 0.0);
+    ASSERT(xylem_bswap((uint16_t)0) == 0);
+    ASSERT(xylem_bswap((int16_t)0) == 0);
+    ASSERT(xylem_bswap((uint32_t)0U) == 0U);
+    ASSERT(xylem_bswap((int32_t)0) == 0);
+    ASSERT(xylem_bswap((uint64_t)0ULL) == 0ULL);
+    ASSERT(xylem_bswap((int64_t)0) == 0);
+    ASSERT(xylem_bswap(0.0f) == 0.0f);
+    ASSERT(xylem_bswap(0.0) == 0.0);
 }
 
 int main(void) {
