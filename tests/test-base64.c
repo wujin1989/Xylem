@@ -20,7 +20,7 @@
  */
 
 #include "xylem.h"
-#include "ASSERT.h"
+#include "assert.h"
 
 /**
  * Test encoding and decoding of empty input (zero-length).
