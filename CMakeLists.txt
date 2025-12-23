@@ -9,7 +9,7 @@ option(XYLEM_ENABLE_TESTING "enable unit testing" ON)
 option(XYLEM_ENABLE_ASAN "enable memory error detection" OFF)
 option(XYLEM_ENABLE_TSAN  "enable data race detection" OFF)
 option(XYLEM_ENABLE_UBSAN "enable undefined behavior detection" OFF)
-option(XYLEM_ENABLE_DYNAMIC_LIBRARY "build dynamic library" OFF)
+option(XYLEM_ENABLE_DYNAMIC_LIBRARY "build dynamic library" ON)
 option(XYLEM_ENABLE_COVERAGE "enable code coverage reporting" OFF)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
