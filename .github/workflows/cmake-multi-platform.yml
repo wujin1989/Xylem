@@ -81,8 +81,7 @@ jobs:
       run: ctest --build-config ${{ matrix.build_type }} --output-on-failure
 
     - name: Run coverage target
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: cmake --build out --target coverage
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --target coverage
 
     - name: Upload to Codecov
       uses: codecov/codecov-action@v4
