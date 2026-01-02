@@ -5,11 +5,11 @@ project(Xylem LANGUAGES C)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(xylem-utils)
 
-option(XYLEM_ENABLE_TESTING "enable unit testing" ON)
+option(XYLEM_ENABLE_TESTING "enable unit testing" OFF)
 option(XYLEM_ENABLE_ASAN "enable memory error detection" OFF)
 option(XYLEM_ENABLE_TSAN  "enable data race detection" OFF)
 option(XYLEM_ENABLE_UBSAN "enable undefined behavior detection" OFF)
-option(XYLEM_ENABLE_DYNAMIC_LIBRARY "build dynamic library" ON)
+option(XYLEM_ENABLE_DYNAMIC_LIBRARY "build dynamic library" OFF)
 option(XYLEM_ENABLE_COVERAGE "enable code coverage reporting" OFF)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
@@ -61,49 +61,13 @@ if(UNIX)
 	)
 endif()
 
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
-    set(TARGET_ARCH "AMD64")
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
-    set(TARGET_ARCH "aarch64")
-else()
-    message(FATAL_ERROR "unsupported architecture: ${CMAKE_SYSTEM_PROCESSOR}")
-endif()
-
-set(OPENSSL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third-party/openssl3")
-set(OPENSSL_INCLUDE_DIR "${OPENSSL_ROOT}/include")
-
-add_library(ssl STATIC IMPORTED)
-add_library(crypto STATIC IMPORTED)
-
-if(WIN32)
-    set(SSL_LIB_PATH "${OPENSSL_ROOT}/lib/${TARGET_ARCH}/${CMAKE_SYSTEM_NAME}/ssl.lib")
-    set(CRYPTO_LIB_PATH "${OPENSSL_ROOT}/lib/${TARGET_ARCH}/${CMAKE_SYSTEM_NAME}/crypto.lib")
-    set(EXTRA_LINK_LIBS "Crypt32.lib")
-elseif(UNIX)
-    set(SSL_LIB_PATH "${OPENSSL_ROOT}/lib/${TARGET_ARCH}/${CMAKE_SYSTEM_NAME}/libssl.a")
-    set(CRYPTO_LIB_PATH "${OPENSSL_ROOT}/lib/${TARGET_ARCH}/${CMAKE_SYSTEM_NAME}/libcrypto.a")
-else()
-    message(FATAL_ERROR "Unsupported platform")
-endif()
-
-set_target_properties(ssl PROPERTIES
-    IMPORTED_LOCATION "${SSL_LIB_PATH}"
-    INTERFACE_INCLUDE_DIRECTORIES "${OPENSSL_INCLUDE_DIR}"
-)
-
-set_target_properties(crypto PROPERTIES
-    IMPORTED_LOCATION "${CRYPTO_LIB_PATH}"
-    INTERFACE_INCLUDE_DIRECTORIES "${OPENSSL_INCLUDE_DIR}"
-    INTERFACE_LINK_LIBRARIES "${EXTRA_LINK_LIBS}"
-)
-
 if(XYLEM_ENABLE_DYNAMIC_LIBRARY)
     add_library(xylem SHARED ${SRCS})
 else()
     add_library(xylem STATIC ${SRCS})
 endif()
 
-target_link_libraries(xylem PRIVATE ssl crypto ${CMAKE_DL_LIBS})
+target_link_libraries(xylem PRIVATE ${CMAKE_DL_LIBS})
 
 xylem_apply_sanitizer(xylem XYLEM_ENABLE_ASAN address)
 xylem_apply_sanitizer(xylem XYLEM_ENABLE_TSAN thread)
