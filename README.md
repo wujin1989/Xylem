@@ -1,4 +1,5 @@
 ![logo](https://github.com/wujin1989/Xylem/blob/main/docs/images/Xylem-logo.png)
+[![CodeQL Advanced](https://github.com/wujin1989/Xylem/actions/workflows/codeql.yml/badge.svg)](https://github.com/wujin1989/Xylem/actions/workflows/codeql.yml)
 [![CodeFactor](https://www.codefactor.io/repository/github/wujin1989/xylem/badge)](https://www.codefactor.io/repository/github/wujin1989/xylem)
 
 # Overview
