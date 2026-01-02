@@ -59,21 +59,6 @@ jobs:
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    - name: Install lcov (Linux/macOS)
-      if: runner.os != 'Windows'
-      run: |
-          if [[ "$RUNNER_OS" == "Linux" ]]; then
-            sudo apt-get update && sudo apt-get install -y lcov
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            brew install lcov
-          fi
-
-    - name: Install OpenCppCoverage (Windows)
-      if: runner.os == 'Windows'
-      run: |
-          choco install opencppcoverage -y
-          echo "OPENCPPCOVERAGE_PATH=C:/Program Files/OpenCppCoverage" >> "$GITHUB_ENV"
-
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
@@ -82,7 +67,6 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DXYLEM_ENABLE_COVERAGE=ON
         -S ${{ github.workspace }}
 
     - name: Build
@@ -94,12 +78,3 @@ jobs:
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest --build-config ${{ matrix.build_type }} --output-on-failure
-
-    - name: Run coverage target
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --target coverage
-
-    - name: Upload to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        file: ${{ steps.strings.outputs.build-output-dir }}/coverage/coverage.info
-        fail_ci_if_error: false
