@@ -8,7 +8,7 @@ Xylem is a pure C library, **supplementing** — not replacing — the C11 stand
 
 
 # Features
-- **Cross-platform compatibility** (Windows, Linux, macOS)
+- **Cross-platform compatibility**
 
 
 # Compile
