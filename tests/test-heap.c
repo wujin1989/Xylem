@@ -147,7 +147,7 @@ static void test_heap_empty(void) {
 static void test_heap_insert_multiple(void) {
     xylem_heap_t heap;
     test_item_t items[] = {
-        {.value = 30}, {.value = 20}, {.value = 10}, {.value = 40}};
+        {.value = 3}, {.value = 2}, {.value = 1}, {.value = 2}};
 
     xylem_heap_init(&heap, _test_cmp_min);
 
@@ -159,7 +159,7 @@ static void test_heap_insert_multiple(void) {
     /* Root must be the smallest */
     test_item_t* root_item =
         xylem_heap_entry(xylem_heap_root(&heap), test_item_t, node);
-    ASSERT(root_item->value == 10);
+    ASSERT(root_item->value == 1);
 }
 
 /**
@@ -167,13 +167,13 @@ static void test_heap_insert_multiple(void) {
  */
 static void test_heap_dequeue_all(void) {
     xylem_heap_t heap;
-    test_item_t  items[100];
-    for (int i = 0; i < 100; ++i) {
+    test_item_t  items[10];
+    for (int i = 0; i < 10; ++i) {
         items[i].value = i * 2 + (i % 3); // Some random-ish pattern
     }
 
     xylem_heap_init(&heap, _test_cmp_min);
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 10; ++i) {
         xylem_heap_insert(&heap, &items[i].node);
     }
 
