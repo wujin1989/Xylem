@@ -27,16 +27,9 @@ _Pragma("once")
 
 typedef struct xylem_rbtree_node_s xylem_rbtree_node_t;
 typedef struct xylem_rbtree_s      xylem_rbtree_t;
-typedef enum xylem_rbtree_status_e xylem_rbtree_status_t;
 
 typedef int (*xylem_rbtree_cmp_nn_fn_t)(const xylem_rbtree_node_t* first, const xylem_rbtree_node_t* second);
 typedef int (*xylem_rbtree_cmp_kn_fn_t)(const void* key, const xylem_rbtree_node_t* node);
-
-enum xylem_rbtree_status_e {
-    XYLEM_RBTREE_OK,
-    XYLEM_RBTREE_DUP,
-    XYLEM_RBTREE_ERR,
-};
 
 struct xylem_rbtree_node_s {
     struct xylem_rbtree_node_s* parent;
@@ -51,8 +44,8 @@ struct xylem_rbtree_s {
     xylem_rbtree_cmp_kn_fn_t cmp_kn;
 };
 
-extern xylem_rbtree_status_t xylem_rbtree_init(xylem_rbtree_t* tree, xylem_rbtree_cmp_nn_fn_t cmp_nn, xylem_rbtree_cmp_kn_fn_t cmp_kn);
-extern xylem_rbtree_status_t xylem_rbtree_insert(xylem_rbtree_t* tree, xylem_rbtree_node_t* node);
+extern void xylem_rbtree_init(xylem_rbtree_t* tree, xylem_rbtree_cmp_nn_fn_t cmp_nn, xylem_rbtree_cmp_kn_fn_t cmp_kn);
+extern void xylem_rbtree_insert(xylem_rbtree_t* tree, xylem_rbtree_node_t* node);
 extern void xylem_rbtree_erase(xylem_rbtree_t* tree, xylem_rbtree_node_t* node);
 extern bool xylem_rbtree_empty(xylem_rbtree_t* tree);
 extern xylem_rbtree_node_t* xylem_rbtree_find(xylem_rbtree_t* tree, const void* key);

@@ -207,25 +207,17 @@ static void _rbtree_erase_color(
     }
 }
 
-xylem_rbtree_status_t xylem_rbtree_init(
+void xylem_rbtree_init(
     xylem_rbtree_t*          tree,
     xylem_rbtree_cmp_nn_fn_t cmp_nn,
     xylem_rbtree_cmp_kn_fn_t cmp_kn) {
-    if (!tree || !cmp_nn || !cmp_kn) {
-        return XYLEM_RBTREE_ERR;
-    }
     tree->root = NULL;
     tree->cmp_nn = cmp_nn;
     tree->cmp_kn = cmp_kn;
-
-    return XYLEM_RBTREE_OK;
 }
 
-xylem_rbtree_status_t
+void
 xylem_rbtree_insert(xylem_rbtree_t* tree, xylem_rbtree_node_t* node) {
-    if (!tree || !node) {
-        return XYLEM_RBTREE_ERR;
-    }
     xylem_rbtree_node_t** p = &(tree->root);
     xylem_rbtree_node_t*  parent = NULL;
     while (*p) {
@@ -238,13 +230,11 @@ xylem_rbtree_insert(xylem_rbtree_t* tree, xylem_rbtree_node_t* node) {
         } else if (r > 0) {
             p = &(*p)->right;
         } else {
-            return XYLEM_RBTREE_DUP;
+            return;
         }
     }
     _rbtree_link_node(node, parent, p);
     _rbtree_insert_color(tree, node);
-
-    return XYLEM_RBTREE_OK;
 }
 
 void xylem_rbtree_erase(xylem_rbtree_t* tree, xylem_rbtree_node_t* node) {
