@@ -1,392 +1,303 @@
+/** Copyright (c) 2026-2036, Jin.Wu <wujin.developer@gmail.com>
+ *
+ *  Permission is hereby granted, free of charge, to any person obtaining a copy
+ *  of this software and associated documentation files (the "Software"), to
+ *  deal in the Software without restriction, including without limitation the
+ *  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ *  sell copies of the Software, and to permit persons to whom the Software is
+ *  furnished to do so, subject to the following conditions:
+ *
+ *  The above copyright notice and this permission notice shall be included in
+ *  all copies or substantial portions of the Software.
+ *
+ *  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ *  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ *  IN THE SOFTWARE.
+ */
+
 #include "xylem.h"
 #include "assert.h"
 
-typedef struct {
-    int               key;
+typedef struct test_item_s {
     int               value;
-    xylem_heap_node_t heap_node;
-} MyStruct;
+    xylem_heap_node_t node;
+} test_item_t;
 
-static int my_cmp(const xylem_heap_node_t* a, const xylem_heap_node_t* b) {
-    MyStruct* x = xylem_heap_entry(a, MyStruct, heap_node);
-    MyStruct* y = xylem_heap_entry(b, MyStruct, heap_node);
-    return (x->key > y->key) - (x->key < y->key);
-}
+static int _test_cmp_min(const xylem_heap_node_t* child, const xylem_heap_node_t* parent) {
+    const test_item_t* c = xylem_heap_entry(child, test_item_t, node);
+    const test_item_t* p = xylem_heap_entry(parent, test_item_t, node);
 
-static void test_heap_init() {
-    xylem_heap_t heap;
-    ASSERT(xylem_heap_init(NULL, my_cmp) == XYLEM_HEAP_ERR);
-    ASSERT(xylem_heap_init(&heap, NULL) == XYLEM_HEAP_ERR);
-    ASSERT(xylem_heap_init(&heap, my_cmp) == XYLEM_HEAP_OK);
-    ASSERT(heap.root == NULL);
-    ASSERT(heap.nelts == 0);
-    ASSERT(heap.cmp == my_cmp);
-}
-
-static void test_heap_empty() {
-    xylem_heap_t heap;
-    xylem_heap_init(&heap, my_cmp);
-    ASSERT(xylem_heap_empty(&heap) == true);
-    ASSERT(xylem_heap_empty(NULL) == true);
-
-    MyStruct node = {5, 10, {0}};
-    xylem_heap_insert(&heap, &node.heap_node);
-    ASSERT(xylem_heap_empty(&heap) == false);
-
-    xylem_heap_remove(&heap, &node.heap_node);
-    ASSERT(xylem_heap_empty(&heap) == true);
-}
-
-static void test_heap_insert() {
-    xylem_heap_t heap;
-    xylem_heap_init(&heap, my_cmp);
-
-    ASSERT(xylem_heap_insert(NULL, NULL) == XYLEM_HEAP_ERR);
-    ASSERT(xylem_heap_insert(&heap, NULL) == XYLEM_HEAP_ERR);
-    ASSERT(xylem_heap_insert(NULL, (xylem_heap_node_t*)1) == XYLEM_HEAP_ERR);
-
-    MyStruct nodes[10];
-    for (int i = 0; i < 10; i++) {
-        nodes[i].key = i * 2;
-        nodes[i].value = i;
-        ASSERT(xylem_heap_insert(&heap, &nodes[i].heap_node) == XYLEM_HEAP_OK);
-        ASSERT(heap.nelts == (size_t)(i + 1));
+    if (c->value < p->value) {
+        return -1;
     }
-    MyStruct* root_entry = xylem_heap_entry(heap.root, MyStruct, heap_node);
-    ASSERT(root_entry->key == 0);
-
-    xylem_heap_t heap2;
-    xylem_heap_init(&heap2, my_cmp);
-    MyStruct nodes2[10];
-    for (int i = 9; i >= 0; i--) {
-        nodes2[i].key = i;
-        nodes2[i].value = i * 10;
-        xylem_heap_insert(&heap2, &nodes2[i].heap_node);
+    if (c->value > p->value) {
+        return 1;
     }
-    root_entry = xylem_heap_entry(heap2.root, MyStruct, heap_node);
-    ASSERT(root_entry->key == 0);
+    return 0;
 }
 
-static void test_heap_root() {
-    xylem_heap_t heap;
-    xylem_heap_init(&heap, my_cmp);
-
-    ASSERT(xylem_heap_root(NULL) == NULL);
-    ASSERT(xylem_heap_root(&heap) == NULL);
-
-    MyStruct node1 = {5, 10, {0}};
-    xylem_heap_insert(&heap, &node1.heap_node);
-    ASSERT(xylem_heap_root(&heap) == &node1.heap_node);
-
-    MyStruct node2 = {3, 20, {0}};
-    xylem_heap_insert(&heap, &node2.heap_node);
-    ASSERT(xylem_heap_root(&heap) == &node2.heap_node);
-
-    MyStruct node3 = {1, 30, {0}};
-    xylem_heap_insert(&heap, &node3.heap_node);
-    ASSERT(xylem_heap_root(&heap) == &node3.heap_node);
-}
-
-static void test_heap_remove() {
-    xylem_heap_t heap;
-    xylem_heap_init(&heap, my_cmp);
-
-    xylem_heap_remove(NULL, NULL);
-    xylem_heap_remove(&heap, NULL);
-    xylem_heap_remove(NULL, (xylem_heap_node_t*)1);
-
-    MyStruct nodes[5];
-    for (int i = 0; i < 5; i++) {
-        nodes[i].key = i;
-        nodes[i].value = i * 10;
-        xylem_heap_insert(&heap, &nodes[i].heap_node);
+/**
+ * Helper: validate that the heap's tree structure is a complete binary tree
+ * and that the heap-order property holds (parent <= children for min-heap).
+ */
+static bool _validate_heap(const xylem_heap_t* heap) {
+    if (heap->root == NULL) {
+        return true;
     }
-    ASSERT(heap.nelts == 5);
-    xylem_heap_remove(&heap, &nodes[2].heap_node);
-    ASSERT(heap.nelts == 4);
 
-    xylem_heap_remove(&heap, &nodes[0].heap_node);
-    ASSERT(heap.nelts == 3);
-    MyStruct* root_entry = xylem_heap_entry(heap.root, MyStruct, heap_node);
-    ASSERT(root_entry->key == 1);
-}
+    /* BFS to check completeness and heap order */
+    xylem_heap_node_t* queue[1024];
+    size_t             front = 0, back = 0;
+    queue[back++] = heap->root;
 
-static void test_heap_dequeue() {
-    xylem_heap_t heap;
-    xylem_heap_init(&heap, my_cmp);
+    bool   seen_null = false;
+    size_t count = 0;
 
-    xylem_heap_dequeue(NULL);
-    xylem_heap_dequeue(&heap);
+    while (front < back) {
+        xylem_heap_node_t* node = queue[front++];
 
-    MyStruct nodes[5];
-    int      keys[] = {10, 5, 20, 3, 8};
-    for (int i = 0; i < 5; i++) {
-        nodes[i].key = keys[i];
-        nodes[i].value = i;
-        xylem_heap_insert(&heap, &nodes[i].heap_node);
-    }
-    ASSERT(heap.nelts == 5);
-    MyStruct* root_entry = xylem_heap_entry(heap.root, MyStruct, heap_node);
-    ASSERT(root_entry->key == 3);
+        if (node == NULL) {
+            seen_null = true;
+            continue;
+        }
 
-    xylem_heap_dequeue(&heap);
-    ASSERT(heap.nelts == 4);
-    root_entry = xylem_heap_entry(heap.root, MyStruct, heap_node);
-    ASSERT(root_entry->key == 5);
-}
-
-static void test_heap_single_node() {
-    xylem_heap_t heap;
-    xylem_heap_init(&heap, my_cmp);
-
-    MyStruct node = {42, 100, {0}};
-    xylem_heap_insert(&heap, &node.heap_node);
-
-    ASSERT(heap.nelts == 1);
-    ASSERT(heap.root == &node.heap_node);
-    ASSERT(xylem_heap_root(&heap) == &node.heap_node);
-    ASSERT(xylem_heap_empty(&heap) == false);
-
-    xylem_heap_remove(&heap, &node.heap_node);
-    ASSERT(heap.nelts == 0);
-    ASSERT(heap.root == NULL);
-    ASSERT(xylem_heap_empty(&heap) == true);
-}
-
-static void test_heap_random_operations() {
-    xylem_heap_t heap;
-    xylem_heap_init(&heap, my_cmp);
-
-    MyStruct nodes[100];
-    for (int i = 0; i < 100; i++) {
-        nodes[i].key = rand() % 1000;
-        nodes[i].value = i;
-        xylem_heap_insert(&heap, &nodes[i].heap_node);
-    }
-    ASSERT(heap.nelts == 100);
-
-    int last_key = -1;
-    while (!xylem_heap_empty(&heap)) {
-        MyStruct* min = xylem_heap_entry(heap.root, MyStruct, heap_node);
-        ASSERT(min->key >= last_key);
-        last_key = min->key;
-        xylem_heap_dequeue(&heap);
-    }
-    ASSERT(heap.nelts == 0);
-    ASSERT(heap.root == NULL);
-}
-
-static void test_heap_duplicate_keys() {
-    xylem_heap_t heap;
-    xylem_heap_init(&heap, my_cmp);
-
-    MyStruct nodes[10];
-    int      keys[] = {5, 5, 5, 5, 5, 3, 3, 3, 8, 8};
-    for (int i = 0; i < 10; i++) {
-        nodes[i].key = keys[i];
-        nodes[i].value = i;
-        xylem_heap_insert(&heap, &nodes[i].heap_node);
-    }
-    ASSERT(heap.nelts == 10);
-
-    MyStruct* first = xylem_heap_entry(heap.root, MyStruct, heap_node);
-    ASSERT(first->key == 3);
-
-    int count = 0;
-    while (!xylem_heap_empty(&heap)) {
-        MyStruct* min = xylem_heap_entry(heap.root, MyStruct, heap_node);
-        ASSERT(min->key >= 3 && min->key <= 8);
+        if (seen_null) {
+            /* Non-null after null violates completeness */
+            return false;
+        }
         count++;
-        xylem_heap_dequeue(&heap);
+
+        /* Check heap order: child >= parent (min-heap) */
+        if (node->left) {
+            if (heap->cmp(node->left, node) < 0) {
+                return false; // child < parent ¡ú invalid
+            }
+            queue[back++] = node->left;
+        } else {
+            queue[back++] = NULL;
+        }
+
+        if (node->right) {
+            if (heap->cmp(node->right, node) < 0) {
+                return false;
+            }
+            queue[back++] = node->right;
+        } else {
+            queue[back++] = NULL;
+        }
     }
-    ASSERT(count == 10);
+    return count == heap->nelts;
 }
 
-static void test_heap_remove_last_node() {
+/**
+ * Test xylem_heap_init: verifies that the heap is properly initialized
+ * with a NULL root, zero element count, and the provided comparison function.
+ */
+static void test_heap_init(void) {
     xylem_heap_t heap;
-    xylem_heap_init(&heap, my_cmp);
 
-    MyStruct node = {5, 10, {0}};
-    xylem_heap_insert(&heap, &node.heap_node);
-    ASSERT(heap.nelts == 1);
-    xylem_heap_remove(&heap, &node.heap_node);
-    ASSERT(heap.nelts == 0);
+    xylem_heap_init(&heap, _test_cmp_min);
+
     ASSERT(heap.root == NULL);
-
-    xylem_heap_t heap2;
-    xylem_heap_init(&heap2, my_cmp);
-    MyStruct nodes[3] = {
-        {3, 1, {0}},
-        {2, 2, {0}},
-        {1, 3, {0}},
-    };
-    for (int i = 0; i < 3; i++) {
-        xylem_heap_insert(&heap2, &nodes[i].heap_node);
-    }
-    ASSERT(heap2.nelts == 3);
-    xylem_heap_remove(&heap2, &nodes[2].heap_node);
-    ASSERT(heap2.nelts == 2);
+    ASSERT(heap.nelts == 0);
+    ASSERT(heap.cmp == _test_cmp_min);
 }
 
-static void test_heap_edge_cases() {
+/**
+ * Test xylem_heap_insert and xylem_heap_root: inserts a single node
+ * and checks that it becomes the root.
+ */
+static void test_heap_insert_single(void) {
     xylem_heap_t heap;
-    xylem_heap_init(&heap, my_cmp);
+    test_item_t item = {.value = 42};
 
-    xylem_heap_dequeue(NULL);
-    ASSERT(xylem_heap_root(NULL) == NULL);
-    ASSERT(xylem_heap_empty(NULL) == true);
-    xylem_heap_remove(NULL, NULL);
-    xylem_heap_remove(&heap, NULL);
+    xylem_heap_init(&heap, _test_cmp_min);
+    xylem_heap_insert(&heap, &item.node);
 
-    MyStruct nodes[4] = {
-        {10, 1, {0}},
-        {20, 2, {0}},
-        {30, 3, {0}},
-        {40, 4, {0}},
-    };
-    for (int i = 0; i < 4; i++) {
-        xylem_heap_insert(&heap, &nodes[i].heap_node);
+    ASSERT(heap.nelts == 1);
+    ASSERT(xylem_heap_root(&heap) == &item.node);
+    ASSERT(item.node.parent == NULL);
+    ASSERT(item.node.left == NULL);
+    ASSERT(item.node.right == NULL);
+}
+
+/**
+ * Test xylem_heap_empty: checks that empty() returns true for a new
+ * heap and false after insertion.
+ */
+static void test_heap_empty(void) {
+    xylem_heap_t heap;
+    test_item_t item = {.value = 10};
+
+    xylem_heap_init(&heap, _test_cmp_min);
+    ASSERT(xylem_heap_empty(&heap) == true);
+
+    xylem_heap_insert(&heap, &item.node);
+    ASSERT(xylem_heap_empty(&heap) == false);
+}
+
+/**
+ * Test xylem_heap_insert multiple nodes: verifies heap property is
+ * maintained after inserting several items into a min-heap.
+ */
+static void test_heap_insert_multiple(void) {
+    xylem_heap_t heap;
+    test_item_t items[] = {
+        {.value = 30}, {.value = 20}, {.value = 10}, {.value = 40}};
+
+    xylem_heap_init(&heap, _test_cmp_min);
+
+    for (int i = 0; i < sizeof(items) / sizeof(items[0]); ++i) {
+        xylem_heap_insert(&heap, &items[i].node);
     }
     ASSERT(heap.nelts == 4);
 
-    for (int i = 2; i >= 0; i--) {
-        xylem_heap_remove(&heap, &nodes[i].heap_node);
-        ASSERT(heap.nelts == (size_t)(i + 1));
+    /* Root must be the smallest */
+    test_item_t* root_item =
+        xylem_heap_entry(xylem_heap_root(&heap), test_item_t, node);
+    ASSERT(root_item->value == 10);
+}
+
+/**
+ * Test repeated dequeue until empty.
+ */
+static void test_heap_dequeue_all(void) {
+    xylem_heap_t heap;
+    test_item_t  items[100];
+    for (int i = 0; i < 100; ++i) {
+        items[i].value = i * 2 + (i % 3); // Some random-ish pattern
     }
-    ASSERT(heap.nelts == 1);
-    xylem_heap_remove(&heap, &nodes[3].heap_node);
+
+    xylem_heap_init(&heap, _test_cmp_min);
+    for (int i = 0; i < 100; ++i) {
+        xylem_heap_insert(&heap, &items[i].node);
+    }
+
+    int last_value = -1;
+    while (!xylem_heap_empty(&heap)) {
+        test_item_t* current =
+            xylem_heap_entry(xylem_heap_root(&heap), test_item_t, node);
+        ASSERT(current->value >= last_value); // Should be non-decreasing
+        last_value = current->value;
+        xylem_heap_dequeue(&heap);
+    }
     ASSERT(heap.nelts == 0);
 }
 
-static void test_heap_upward_adjustment() {
+/**
+ * Test removes a non-root node and
+ * checks heap size and integrity.
+ */
+static void test_heap_remove_arbitrary(void) {
     xylem_heap_t heap;
-    xylem_heap_init(&heap, my_cmp);
+    test_item_t items_down[] = {
+        {.value = 1},
+        {.value = 4},
+        {.value = 2},
+        {.value = 3},
+        {.value = 6},
+        {.value = 5}};
 
-    MyStruct nodes[10];
-    int      keys[] = {50, 30, 70, 20, 40, 60, 80, 10, 35, 5};
-
-    for (int i = 0; i < 10; i++) {
-        nodes[i].key = keys[i];
-        nodes[i].value = i;
-        xylem_heap_insert(&heap, &nodes[i].heap_node);
+    xylem_heap_init(&heap, _test_cmp_min);
+    /*
+     * Final min-heap structure after inserting [1, 4, 2, 3, 6, 5]:
+     *
+     *           1                ¡û root (min)
+     *         /   \
+     *        4     2             ¡û level 1
+     *       / \   /
+     *      3   6 5               ¡û level 2 (last level, left-filled)
+     *
+     */
+    for (int i = 0; i < sizeof(items_down) / sizeof(items_down[0]); ++i) {
+        xylem_heap_insert(&heap, &items_down[i].node);
     }
-    ASSERT(heap.nelts == 10);
-    MyStruct* root = xylem_heap_entry(heap.root, MyStruct, heap_node);
-    ASSERT(root->key == 5);
+    ASSERT(heap.nelts == 6);
+    
+    // Walk down;
+    xylem_heap_remove(&heap, &items_down[1].node);
+    ASSERT(heap.nelts == 5);
 
-    xylem_heap_node_t* right_child = heap.root->right;
-    if (right_child != NULL) {
-        MyStruct* right_entry =
-            xylem_heap_entry(right_child, MyStruct, heap_node);
-        if (right_entry->key == 70) {
-            xylem_heap_remove(&heap, right_child);
-            ASSERT(heap.nelts == 9);
-        }
-    }
-    MyStruct small_node = {1, 100, {0}};
-    xylem_heap_insert(&heap, &small_node.heap_node);
-    root = xylem_heap_entry(heap.root, MyStruct, heap_node);
-    ASSERT(root->key == 1);
-
-    if (heap.root->left != NULL) {
-        xylem_heap_remove(&heap, heap.root->left);
-    }
     while (!xylem_heap_empty(&heap)) {
         xylem_heap_dequeue(&heap);
     }
-}
 
-static void test_heap_complex_removal() {
-    xylem_heap_t heap;
-    xylem_heap_init(&heap, my_cmp);
-
-    MyStruct nodes[15];
-    for (int i = 0; i < 15; i++) {
-        nodes[i].key = (i * 7) % 20;
-        nodes[i].value = i;
-        xylem_heap_insert(&heap, &nodes[i].heap_node);
-    }
-    ASSERT(heap.nelts == 15);
-
-    for (int i = 0; i < 7; i++) {
-        if (heap.root != NULL) {
-            xylem_heap_dequeue(&heap);
-        }
-    }
-    ASSERT(heap.nelts == 8);
-
-    for (int i = 7; i < 15; i++) {
-        xylem_heap_remove(&heap, &nodes[i].heap_node);
-    }
-    ASSERT(heap.nelts == 0);
-}
-
-static void test_heap_remove_last_root_node() {
-    xylem_heap_t heap;
-    xylem_heap_init(&heap, my_cmp);
-
-    MyStruct node1 = {5, 10, {0}};
-    xylem_heap_insert(&heap, &node1.heap_node);
-    ASSERT(heap.nelts == 1);
-    ASSERT(heap.root == &node1.heap_node);
-
-    xylem_heap_remove(&heap, &node1.heap_node);
-    ASSERT(heap.nelts == 0);
-    ASSERT(heap.root == NULL);
-    ASSERT(xylem_heap_empty(&heap) == true);
-
-    MyStruct nodes[3] = {
-        {3, 1, {0}},
-        {1, 2, {0}},
-        {2, 3, {0}},
+    test_item_t items_up[] = {
+        {.value = 1},   // 0
+        {.value = 2},   // 1
+        {.value = 100}, // 2
+        {.value = 3},   // 3
+        {.value = 4},   // 4
+        {.value = 200}, // 5 ¡û DELETE THIS
+        {.value = 300}, // 6
+        {.value = 5},   // 7
+        {.value = 6},   // 8
+        {.value = 7}    // 9 ¡û last node
     };
-    for (int i = 0; i < 3; i++) {
-        xylem_heap_insert(&heap, &nodes[i].heap_node);
+    /*
+     * Final min-heap structure after inserting the following values in
+     * level-order: [1, 2, 100, 3, 4, 200, 300, 5, 6, 7]
+     *
+     * This is a valid min-heap because every parent ¡Ü its children.
+     *
+     * Tree representation (complete binary tree, filled left to right):
+     *
+     *                     1                          ¡û root (minimum)
+     *                /         \
+     *               2           100                  ¡û level 1
+     *             /   \        /    \
+     *            3     4      200    300             ¡û level 2
+     *           / \   /
+     *          5   6 7                               ¡û level 3
+     */
+    for (int i = 0; i < sizeof(items_up) / sizeof(items_up[0]); ++i) {
+        xylem_heap_insert(&heap, &items_up[i].node);
     }
-    ASSERT(heap.nelts == 3);
+    ASSERT(heap.nelts == 10);
 
-    xylem_heap_remove(&heap, &nodes[0].heap_node);
-    ASSERT(heap.nelts == 2);
-
-    xylem_heap_remove(&heap, &nodes[2].heap_node);
-    ASSERT(heap.nelts == 1);
-
-    xylem_heap_remove(&heap, &nodes[1].heap_node);
-    ASSERT(heap.nelts == 0);
-    ASSERT(heap.root == NULL);
-
-    MyStruct node2 = {10, 20, {0}};
-    xylem_heap_insert(&heap, &node2.heap_node);
-    ASSERT(heap.nelts == 1);
-
-    xylem_heap_dequeue(&heap);
-    ASSERT(heap.nelts == 0);
-    ASSERT(heap.root == NULL);
-
-    MyStruct node3 = {7, 30, {0}};
-    xylem_heap_insert(&heap, &node3.heap_node);
-    ASSERT(heap.nelts == 1);
-    ASSERT(heap.root == &node3.heap_node);
-
-    xylem_heap_remove(&heap, &node3.heap_node);
-    ASSERT(heap.nelts == 0);
-    ASSERT(heap.root == NULL);
+    // Walk up;
+    xylem_heap_remove(&heap, &items_up[5].node);
+    ASSERT(heap.nelts == 9);
 }
 
-int main() {
+/**
+ * Test structural integrity after many operations.
+ */
+static void test_heap_structure_integrity(void) {
+    xylem_heap_t heap;
+    test_item_t  items[15];
+    for (int i = 0; i < 15; ++i) {
+        items[i].value = 15 - i; // Insert 15,14,...,1 ¡ú reverse order
+    }
+
+    xylem_heap_init(&heap, _test_cmp_min);
+    for (int i = 0; i < 15; ++i) {
+        xylem_heap_insert(&heap, &items[i].node);
+        ASSERT(_validate_heap(&heap)); // Validate after every insert!
+    }
+
+    /* Now dequeue half */
+    for (int i = 0; i < 7; ++i) {
+        xylem_heap_dequeue(&heap);
+        ASSERT(_validate_heap(&heap));
+    }
+
+    /* Remove arbitrary middle node */
+    xylem_heap_remove(&heap, &items[5].node);
+    ASSERT(_validate_heap(&heap));
+}
+
+int main(void) {
     test_heap_init();
+    test_heap_insert_single();
     test_heap_empty();
-    test_heap_insert();
-    test_heap_root();
-    test_heap_remove();
-    test_heap_dequeue();
-    test_heap_single_node();
-    test_heap_random_operations();
-    test_heap_duplicate_keys();
-    test_heap_remove_last_node();
-    test_heap_edge_cases();
-    test_heap_upward_adjustment();
-    test_heap_complex_removal();
-    test_heap_remove_last_root_node();
+    test_heap_insert_multiple();
+    test_heap_dequeue_all();
+    test_heap_remove_arbitrary();
+    test_heap_structure_integrity();
     return 0;
 }

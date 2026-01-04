@@ -57,25 +57,17 @@ static void _heap_node_swap(
     }
 }
 
-xylem_heap_status_t xylem_heap_init(
+void xylem_heap_init(
     xylem_heap_t* heap,
     int (*cmp)(
-        const xylem_heap_node_t* first, const xylem_heap_node_t* second)) {
-    if (!heap || !cmp) {
-        return XYLEM_HEAP_ERR;
-    }
+        const xylem_heap_node_t* child, const xylem_heap_node_t* parent)) {
     heap->root = NULL;
     heap->nelts = 0;
     heap->cmp = cmp;
-
-    return XYLEM_HEAP_OK;
 }
 
-xylem_heap_status_t
+void
 xylem_heap_insert(xylem_heap_t* heap, xylem_heap_node_t* node) {
-    if (!heap || !node) {
-        return XYLEM_HEAP_ERR;
-    }
     xylem_heap_node_t** parent;
     xylem_heap_node_t** child;
     size_t              path;
@@ -116,14 +108,9 @@ xylem_heap_insert(xylem_heap_t* heap, xylem_heap_node_t* node) {
     while (node->parent != NULL && heap->cmp(node, node->parent) < 0) {
         _heap_node_swap(heap, node->parent, node);
     }
-
-    return XYLEM_HEAP_OK;
 }
 
 void xylem_heap_remove(xylem_heap_t* heap, xylem_heap_node_t* node) {
-    if (!heap || !node) {
-        return;
-    }
     xylem_heap_node_t*  smallest;
     xylem_heap_node_t** max;
     xylem_heap_node_t*  child;

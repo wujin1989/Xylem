@@ -27,12 +27,6 @@ _Pragma("once")
 
 typedef struct xylem_heap_s      xylem_heap_t;
 typedef struct xylem_heap_node_s xylem_heap_node_t;
-typedef enum xylem_heap_status_e xylem_heap_status_t;
-
-enum xylem_heap_status_e {
-    XYLEM_HEAP_OK,
-    XYLEM_HEAP_ERR,
-};
 
 struct xylem_heap_node_s {
     struct xylem_heap_node_s* left;
@@ -43,11 +37,11 @@ struct xylem_heap_node_s {
 struct xylem_heap_s {
     struct xylem_heap_node_s* root;
     size_t                    nelts;
-    int (*cmp)(const xylem_heap_node_t* first, const xylem_heap_node_t* second);
+    int (*cmp)(const xylem_heap_node_t* child, const xylem_heap_node_t* parent);
 };
 
-extern xylem_heap_status_t xylem_heap_init(xylem_heap_t* heap, int (*cmp)(const xylem_heap_node_t* first, const xylem_heap_node_t* second));
-extern xylem_heap_status_t xylem_heap_insert(xylem_heap_t* heap, xylem_heap_node_t* node);
+extern void xylem_heap_init(xylem_heap_t* heap, int (*cmp)(const xylem_heap_node_t* child, const xylem_heap_node_t* parent));
+extern void xylem_heap_insert(xylem_heap_t* heap, xylem_heap_node_t* node);
 extern void xylem_heap_remove(xylem_heap_t* heap, xylem_heap_node_t* node);
 extern void xylem_heap_dequeue(xylem_heap_t* heap);
 extern bool xylem_heap_empty(xylem_heap_t* heap);
